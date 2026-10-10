@@ -1,54 +1,106 @@
-# OpenAI Edge Workbench
+<p align="center"><img src="docs/assets/banner.svg" alt="Namu AI Workbench — experimental tools, visible evidence" width="100%"></p>
 
-Unofficial one-click Windows installer/updater with a browser dashboard, selectable tool packs, live progress and an auditable repair report. This standalone repository is separate from AMReye.AI.
+<p align="center">
+  <a href="https://github.com/Namdev90/openai-edge-workbench/actions/workflows/verify.yml"><img src="https://github.com/Namdev90/openai-edge-workbench/actions/workflows/verify.yml/badge.svg" alt="Workbench tests"></a>
+  <a href="https://github.com/Namdev90/openai-edge-workbench/releases"><img src="https://img.shields.io/github/v/release/Namdev90/openai-edge-workbench?include_prereleases&label=preview&color=4dd6bb" alt="Preview release"></a>
+  <img src="https://img.shields.io/badge/platform-Windows-5c9cdd" alt="Windows">
+  <a href="docs/FEATURE-CATALOG.md"><img src="https://img.shields.io/badge/Feature_Studio-100_actions-4dd6bb" alt="100 implemented Feature Studio actions"></a>
+</p>
 
-## Install
+<p align="center"><strong>A local Windows workspace for installing compatible experimental tools, inspecting your environment, and keeping the evidence close.</strong></p>
 
-Short graphical launch in ordinary Windows PowerShell:
+<p align="center"><a href="SETUP.md">Get started</a> · <a href="docs/FEATURE-CATALOG.md">100 actions</a> · <a href="docs/FEATURE-STUDIO.md">Dashboard guide</a> · <a href="source/VERIFICATION.md">Verification</a> · <a href="CONTRIBUTING.md">Contribute</a></p>
+
+Namu AI Workbench is an independent community utility, previously presented as **OpenAI Edge Workbench**. It is separate from AMReye.AI and is not an OpenAI product. Existing launcher names and installation paths remain compatible.
+
+## Start in one command
+
+Paste into ordinary **Windows PowerShell** as your normal user:
 
 ```powershell
 irm https://raw.githubusercontent.com/Namdev90/openai-edge-workbench/main/Run.ps1 | iex
 ```
 
-Every tool pack is selected initially; edit choices during the dashboard countdown. The short launcher trusts current GitHub code; SETUP.md also provides the pinned, independently checksum-verified first-download command.
+The launcher updates verified application source, runs its offline checks, and opens the dashboard with all tool packs selected. A visible **12-second countdown** starts installation. Change a selection, open a feature action, or press **Pause auto-start** to review first. Windows installation approvals and account sign-in can require your input.
 
+The short command trusts the current GitHub launcher. [SETUP.md](SETUP.md) provides the independently checksum-pinned first download, authenticated private-GitHub setup, and downloadable one-click CMD. Model requests are **off by default**, including when all tool packs are selected. The optional live Codex test uses account quota or API billing when you intentionally enable it.
 
-Download the setup launcher from Releases and double-click it, or use the exact PowerShell command in [SETUP.md](SETUP.md). Setup pins the initial downloader to a reviewed commit and verifies SHA256 before execution. The updater resolves one current main commit, validates the complete launcher and embedded source, runs offline tests, and opens the dashboard.
+## One dashboard, visible results
 
-The dashboard starts after a visible 12-second countdown. Changing selections pauses that countdown. Public nightly/alpha/beta/Insiders/Canary channels are selected where supported. The optional live Codex request uses model quota or API billing; disable it in the dashboard if desired. Windows package installation approvals and account sign-in may require your input.
+![Simulated Namu AI Workbench dashboard showing setup and the local feature catalog](docs/assets/dashboard.png)
 
-If the repository is private, use the authenticated command in SETUP.md. The updater uses GitHub CLI's existing stored sign-in and never exports its token to raw download hosts or diagnostics. The repository's current visibility is preserved.
+*Actual dashboard rendered in explicit simulation mode. This screenshot shows the interface; it is not installation evidence.*
 
-## Updates, migration and reports
+| Workspace | What it does |
+| --- | --- |
+| **Install & update** | Select official public nightly, alpha, beta, Insiders, Canary and daily channels where supported. Resolve compatibility before activating managed runtimes. |
+| **Inspect** | Run 30 on-demand checks for resources, command routing, ownership, provenance, runtime health and official catalogs. |
+| **Understand** | Open 35 report analyses for failures, warnings, migration coverage, quotas, verification limits and changes between runs. |
+| **Plan & export** | Use 25 actions: ten installation profiles, plan/dependency reviews, a local saved recipe, and JSON/Markdown/CSV/HTML/ZIP exports. |
+| **Make it yours** | Use ten browser controls for search, categories, favorites, density, text size, reduced motion, log filters and a keyboard palette. |
 
-The **OpenAI Edge Workbench** desktop shortcut refreshes published source before each launch. Offline fallback rechecks cached launcher and embedded source hashes and records the failed update. Fresh Python/JavaScript SDK candidates are selected only after checks; failed packs retain the previous managed SDK selection. Existing projects, credentials, Codex history/configuration, provider routes, original applications and browser profiles are preserved.
+These are **100 implemented Feature Studio actions**, numbered `studio:f001`–`studio:f100`. They include distinct analyses, presets and display controls; they are not 100 new software installers. [The catalog](docs/FEATURE-CATALOG.md) lists every action, its effect and prerequisites. [PR #1](https://github.com/Namdev90/openai-edge-workbench/pull/1) contributed a separate 100-item proposal roadmap. Its `roadmap:Fnnn` IDs and fuller acceptance criteria are tracked in [roadmap status](docs/ROADMAP-STATUS.md).
 
-Version 2.0.2 repairs the first laptop diagnostic: Python is selected only after a full compatible wheel preflight, WebView2 is checked through Microsoft's registry values, preview network timeouts receive bounded same-channel retries, and native Windows PowerShell produces checked JSON for the original user PATH backup. Report reads and writes are synchronized, and remaining version or npm compatibility warnings stay visible.
+<details>
+<summary><strong>See Feature Studio and the mobile layout</strong></summary>
 
-Version 2.0.3 retains the newest official Node nightly for tool execution and selects the newest npm separately. Official npm semver checks choose its newest compatible private Node host; no npm warning is suppressed and no engine metadata is patched. npm/npx launchers use that explicit host, while Codex and SDK execution keep the nightly runtime. .NET daily discovery also recognizes release-candidate channels marked go-live.
+![Feature Studio simulation with searchable, categorized capabilities](docs/assets/feature-studio.png)
 
-The setup launcher updates published code. The self-contained OpenAI-Edge-Workbench.cmd in the repository is also available as a snapshot for that release. Neither invents repair code or enables private publisher betas.
+<img src="docs/assets/mobile.png" alt="Simulated dashboard at a 400-pixel viewport" width="360">
 
-Use **Copy report**, or open:
+</details>
+
+## Tools, compatibility and preservation
+
+The core installs ChatGPT desktop, Codex CLI, the OpenAI API CLI and SDKs, Node nightly, compatible Python, VS Code Insiders, PowerShell Preview, Terminal Preview, Git, GitHub CLI, uv and WebView2. Optional packs add document/data/media libraries and utilities, scientific Python, Chrome Canary/Playwright, and the .NET daily SDK. [Detailed supported scope](source/README.md) explains each pack.
+
+Node nightly remains the tool runtime. npm uses the newest official private Node host satisfying its unchanged engine requirements. Python is selected only after the **entire selected package set** resolves to compatible binary wheels. Exclusions and transport failures appear in the report; unavailable private preview channels are never invented.
+
+Workbench preserves original programs, project environments, browser profiles, credentials, Codex history and provider routes. Supported editor migration copies missing settings and default-profile extension IDs; conflicts remain for review. Cleanup removes only unused generations owned by Workbench. Historical Namu AI Edge, Device Manager and audit sources are retained as inert archives; [migration reconciliation](MIGRATION.md) records what was recovered and what is active.
+
+## Help without configuration
+
+**Built-in guidance** explains the completed report immediately, using local rules. It needs no account, API key, model download or coding. It labels observed outcomes and review needs; it never applies a repair automatically.
+
+<details>
+<summary><strong>See built-in report guidance</strong></summary>
+
+![Built-in guidance explaining a completed simulated report without account setup](docs/assets/guidance.png)
+
+</details>
+
+Optional cloud AI supports **Groq, Google Gemini and OpenRouter**, selected from [public-apis](https://github.com/public-apis/public-apis#machine-learning) and checked against official free-access terms. Connect a provider key through the dashboard; it stays in memory for that session. Preview the exact curated summary and explicitly approve sending it. Free tiers have limits, and Gemini requires a project without linked billing. These connections are optional; installation works without them. [AI assistance guide](docs/AI-ASSIST.md).
+
+## Reports you can audit
+
+Reports stay on your computer:
 
 ```text
-%LOCALAPPDATA%\OpenAI-Edge-Workbench\reports\<run-id>\Paste-Into-ChatGPT.txt
+%LOCALAPPDATA%\OpenAI-Edge-Workbench\reports\<run-id>\
 ```
 
-The report records selected/observed versions, exits, failures, model checks and the source commit. Review redacted text before sharing. No logs or messages are automatically sent. Local package installation and HTTP reachability do not establish cloud authorization or cross-device synchronization.
+Each run records selected and observed versions, command exits, update provenance, warnings and verification limits. Use **Copy report** or inspect completed runs in Feature Studio. Exporting creates a local download; nothing is uploaded automatically. Review redaction before sharing. Keep authentication files, private backups and `local-session.json` private.
 
-## Source and verification
+`VERIFIED` applies to the specific recorded check. `CATALOG_CURRENT`, `REVIEW_NEEDED`, failures and simulated results remain distinct. Installation, desktop behavior, cloud authorization and a real model request are separate evidence. [The verification record](source/VERIFICATION.md) distinguishes automated tests from actual Windows observations.
 
-[source/](source/) contains every embedded application file. [release.json](release.json) and [tools/verify_payload.py](tools/verify_payload.py) verify exact byte correspondence, including tests. No source-byte exception is used. [tools/build_release.py](tools/build_release.py) rebuilds the deterministic launcher after edits.
+## Built for review
 
-Application regression tests and 22 setup/security tests cover Windows PowerShell 5.1 and PowerShell 7. The actual CMD extraction and bootstrap are exercised in NoLaunch mode, and CI repeats application/distribution checks on Windows and Linux. [The verification record](source/VERIFICATION.md) separates offline checks, the supplied installation report, and targeted laptop repair results. It does not certify every desktop feature or cloud plugin.
+```text
+source/                 Standard-library engine, protected API, dashboard and tests
+docs/                   Feature guide, catalog, architecture and roadmap status
+tools/                  Deterministic release build and distribution verifiers
+.github/                Windows/Linux checks and contribution templates
+legacy/                 Byte-preserved historical sources; never executed by setup
+Setup.ps1 / Run.ps1      Verified updater and graphical first launch
+release.json            SHA-256 correspondence with every embedded source file
+```
 
-[MIGRATION.md](MIGRATION.md) and [migration-audit.json](migration-audit.json) document exact historical archives, branch cleanup conditions and verification. Historical files in legacy/ are inert references and are not executed by the active setup.
+The dashboard binds to loopback only. API calls require a per-session capability and exact Host; writes also require the same origin. It accepts registered actions and validated selections, with no arbitrary shell command, path or download-URL interface. Dependencies for user workloads live in managed environments; the dashboard itself uses Python's standard library and plain HTML/CSS/JavaScript.
 
-[Detailed scope](source/README.md) Â· [Verification record](source/VERIFICATION.md) Â· [Official publisher references](source/SOURCES.md).
+[Architecture](docs/ARCHITECTURE.md) · [Development](docs/DEVELOPMENT.md) · [Handoff reconciliation](docs/HANDOFF-RECONCILIATION.md) · [Security policy](SECURITY.md) · [Changelog](CHANGELOG.md) · [Publisher references](source/SOURCES.md) · [Researched alternatives](ALTERNATIVES.md)
 
-See [FEATURES.md](FEATURES.md) for the exact legacy feature reconciliation and [ALTERNATIVES.md](ALTERNATIVES.md) for researched alternatives.
+## Contributing and support
 
-[100 new capability proposals](FEATURE-PROPOSALS.md) provides a prioritized roadmap with current gaps, acceptance criteria and dependencies. It is a documentation proposal, not an implemented feature list or an automatic implementation trigger.
+Use the [issue templates](https://github.com/Namdev90/openai-edge-workbench/issues/new/choose) for a redacted bug report or a concrete feature request. Read [CONTRIBUTING.md](CONTRIBUTING.md) before adding an adapter. Report security issues [privately](https://github.com/Namdev90/openai-edge-workbench/security/advisories/new).
 
-Version 2.0.4 keeps structured Codex doctor warnings/failures visible, including their individual details and remediation. Successful installation or doctor process exit does not hide degraded optional MCP configuration, security observations or history-index warnings. Security exclusions and history databases are not modified automatically.
+No project license has been selected. Third-party tools retain their publisher terms; this repository does not grant rights to redistribute them.

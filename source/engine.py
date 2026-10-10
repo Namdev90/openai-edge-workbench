@@ -31,7 +31,7 @@ import urllib.request
 import uuid
 import zipfile
 
-VERSION = '2.0.4-preview.1'
+VERSION = '3.0.0-preview.1'
 SCHEMA = 'openai-edge-workbench/2'
 ROOT_NAME = 'OpenAI-Edge-Workbench'
 DOCS_MCP = 'https://developers.openai.com/mcp'
@@ -300,7 +300,7 @@ def summarize_codex_doctor(output: str) -> dict:
 
 def default_options() -> dict:
     return {'toolkit':True, 'browser':True, 'science':True, 'dotnet':False,
-            'migrate':True, 'cleanup':True, 'live':True, 'docs_mcp':True}
+            'migrate':True, 'cleanup':True, 'live':False, 'docs_mcp':True}
 
 
 def build_plan(options: dict) -> list[dict]:

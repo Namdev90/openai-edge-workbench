@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="340" viewBox="0 0 1280 340" role="img" aria-labelledby="title desc">
+<title id="title">Namu AI Workbench</title><desc id="desc">Experimental tools. Visible evidence. A local Windows workspace.</desc>
+<defs><linearGradient id="bg" x2="1" y2=".6"><stop stop-color="#08131d"/><stop offset="1" stop-color="#152e3b"/></linearGradient><linearGradient id="accent"><stop stop-color="#5ee1c4"/><stop offset="1" stop-color="#71a9ee"/></linearGradient></defs>
+<rect width="1280" height="340" rx="24" fill="url(#bg)"/>
+<g fill="none" stroke="#3e7780" stroke-opacity=".3"><path d="M850 0v340M930 0v340M1010 0v340M1090 0v340M1170 0v340M810 60h470M810 140h470M810 220h470M810 300h470"/><circle cx="1080" cy="169" r="124"/><circle cx="1080" cy="169" r="93"/><circle cx="1080" cy="169" r="62"/></g>
+<rect x="48" y="43" width="54" height="54" rx="16" fill="#173a42" stroke="#4ba99e"/>
+<text x="75" y="80" text-anchor="middle" fill="#64e2c8" font-family="Segoe UI,Arial,sans-serif" font-size="32" font-weight="700">N</text>
+<text x="120" y="65" fill="#99b5c4" font-family="Segoe UI,Arial,sans-serif" font-size="12" letter-spacing="3">THE LOCAL TOOLING WORKSPACE</text>
+<text x="120" y="90" fill="#e5f0f7" font-family="Segoe UI,Arial,sans-serif" font-size="18">Independent. Inspectable. Windows.</text>
+<text x="48" y="177" fill="#eaf4fa" font-family="Segoe UI,Arial,sans-serif" font-size="54" font-weight="700">Namu AI Workbench</text>
+<text x="48" y="222" fill="url(#accent)" font-family="Segoe UI,Arial,sans-serif" font-size="27" font-weight="600">Experimental tools. Visible evidence.</text>
+<rect x="48" y="259" width="170" height="34" rx="17" fill="#154037" stroke="#367b68"/><text x="133" y="281" text-anchor="middle" fill="#83ebd4" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="1">100 STUDIO ACTIONS</text>
+<text x="237" y="281" fill="#aec3d1" font-family="Segoe UI,Arial,sans-serif" font-size="14">Official previews · Compatible runtimes · Local reports</text>
+<g fill="#73ddd0"><circle cx="1080" cy="45" r="5"/><circle cx="956" cy="169" r="5"/><circle cx="1162" cy="237" r="5"/></g><circle cx="1148" cy="99" r="5" fill="#83a9e7"/>
+<path d="M1056 188v-40l48 40v-40" fill="none" stroke="url(#accent)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

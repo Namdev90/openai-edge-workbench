@@ -1,4 +1,4 @@
-# OpenAI Edge Workbench 2.0.4-preview.1
+# Namu AI Workbench 3.0.0-preview.1
 
 Independent, unsigned Windows maintenance utility generated for Namu. It is not an OpenAI product.
 
@@ -22,9 +22,9 @@ If Windows Terminal Preview streaming still times out, the exact official releas
 
 ## Default scope
 
-Always: current ChatGPT desktop Store ID `9PLM9XGG6VKS`, Git, GitHub CLI, uv, PowerShell Preview, VS Code Insiders, Windows Terminal Preview, WebView2, Node nightly, npm bundled with that nightly, official Codex CLI, official OpenAI API CLI when a verifiable Windows release asset exists, isolated Python and JavaScript OpenAI SDKs, OpenAI/Python/Jupyter preview editor extensions.
+Always: current ChatGPT desktop Store ID `9PLM9XGG6VKS`, Git, GitHub CLI, uv, PowerShell Preview, VS Code Insiders, Windows Terminal Preview, WebView2, Node nightly, newest npm on a separately compatible private Node host, official Codex CLI, official OpenAI API CLI when a verifiable Windows release asset exists, isolated Python and JavaScript OpenAI SDKs, OpenAI/Python/Jupyter preview editor extensions.
 
-Enabled but selectable: documents/data/media (7-Zip, Pandoc, FFmpeg, PowerToys, Python document and data libraries), browser automation (Chrome Canary, Playwright, matched Chromium), scientific Python (Biopython, SciPy, SymPy, scikit-learn), supported editor migration, unused **Workbench-owned** runtime cleanup, official read-only OpenAI documentation MCP, and one read-only Codex model request.
+Enabled but selectable: documents/data/media (7-Zip, Pandoc, FFmpeg, PowerToys, Python document and data libraries), browser automation (Chrome Canary, Playwright, matched Chromium), scientific Python (Biopython, SciPy, SymPy, scikit-learn), supported editor migration, unused **Workbench-owned** runtime cleanup, and official read-only OpenAI documentation MCP.
 
 Optional, off by default: newest advertised .NET preview channel's daily SDK, with signature checking on its installer.
 
@@ -32,7 +32,7 @@ Individual package lists and sources are visible in `engine.py` and the dashboar
 
 ## Costs, installation impact and permissions
 
-The selected toolkit can consume several GB of network and disk capacity. No paid app is purchased, API key created, subscription changed or cloud plugin authorized. Existing account usage/entitlements apply. The optional live Codex test is ON by default because it was requested: one model round trip may consume plan quota or incur API charges depending on your current authentication. Turn it off before Start to avoid the request.
+The selected toolkit can consume several GB of network and disk capacity. No paid app is purchased, API key created, subscription changed or cloud plugin authorized. Existing account usage/entitlements apply. The optional live Codex test is OFF by default, including the all-tools launch. Enable it intentionally for one model round trip, which may consume plan quota or incur API charges depending on your authentication.
 
 No Windows Insider enrollment, operating-system upgrade, driver update, WSL/Docker setup, firewall weakening, antivirus changes, forced reboot, unrestricted remote MCP, hidden service or scheduled task is installed. No automatic email/message sending is enabled.
 
@@ -68,7 +68,19 @@ Same account in desktop/CLI/editor; account/workspace entitlement; desktop app b
 
 ## Verification performed during creation
 
-See `VERIFICATION.md` for actual commands and results. Python logic, local HTTP authorization and simulation flows are testable here. Windows PowerShell bootstrap, WinGet/MSIX installers, UAC interactions and the complete live laptop run have **not** been executed in the build environment. Your first report is required to verify the actual Windows result.
+See `VERIFICATION.md` for actual checks and results. Windows bootstrap and full selected-tool installation were exercised on the owner's laptop for the 2.0.4 line. Version 3.0 adds separately tested Feature Studio actions and a redesigned dashboard. Prior installation evidence does not certify every new action or future release.
+
+## Feature Studio
+
+The graphical dashboard now offers 100 registered actions: 30 read-only diagnostics, 35 completed-report analyses, 25 profiles/plan/export/recipe actions, and ten browser controls. Profiles require explicit Apply and never start installation. Reports can be selected from completed history and exported locally. Recipes are restricted to a marked directory with exactly eight validated boolean options. Simulation skips native diagnostic commands and network checks.
+
+The repository's `docs/FEATURE-CATALOG.md` lists every action. `FEATURE-PROPOSALS.md` is a separate historical roadmap with different IDs and fuller acceptance criteria; its merge is not implementation evidence.
+
+## Optional report assistance
+
+Built-in rule-based guidance needs no key or network and is available after a completed report exists. Optional cloud explanations use three fixed public API integrations offering free access: Groq, Gemini and OpenRouter. Provider accounts/keys and free-tier eligibility remain the user's responsibility. The dashboard can hold a pasted key in session memory; it never persists or returns it. Environment keys are also supported for advanced users.
+
+Cloud requests require a preview of a curated numeric/status/version summary, exact-preview consent and free-account confirmation. Raw report names, messages, commands, paths and configuration are excluded. Only one bounded request runs; no automatic retry, fallback, repair or model use occurs. Gemini unpaid-service terms permit training/human review. Simulation disables cloud requests; local guidance remains labeled simulation. See the repository's `docs/AI-ASSIST.md` for current official terms and limits.
 
 ## Source entry points
 

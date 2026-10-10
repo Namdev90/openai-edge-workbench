@@ -2,6 +2,7 @@
 *.cmd -text
 *.png -text
 *.zip -text
+legacy/maintenance-planning/*.patch -text -whitespace
 # Git for Windows can otherwise convert Python/PowerShell source LF to CRLF
 # and break exact correspondence with the launcher's embedded source archive.
 *.py text eol=lf

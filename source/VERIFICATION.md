@@ -1,10 +1,30 @@
 # Verification record
 
-Build: OpenAI Edge Workbench 2.0.4-preview.1, 10 October 2026.
+Build: Namu AI Workbench 3.0.0-preview.1, 10 October 2026.
+
+## Version 3.0 acceptance record
+
+275 application tests ran locally on Windows: 272 passed, no failures, and three symlink tests skipped because Windows requires additional symlink privilege. The 23 setup/security checks passed separately under Windows PowerShell 5.1 and PowerShell 7. JavaScript syntax, the exact 100-entry documented/executable catalog, active documentation links, SVG/PNG assets and proposal-ID separation were checked.
+
+New coverage includes all 30 diagnostic handlers, all 35 report analyses, all 25 profile/plan/export handlers, the ten client controls, actual protected HTTP feature jobs, admission limits, simulation guards, malformed history, secret-field redaction, JSON export round trips, HTML/CSV safety, support ZIP checksums, recipe preservation, and the all-tools launch excluding automatic model requests.
+
+Astra's final review identified dashboard selections missing from plan/requirements/recipe requests. The corrected client is exercised as JavaScript with explicit checkbox fixtures, and the actual HTTP API verifies the matching plan and saved selection without starting installation. Recipe writes use exclusive descriptor-backed temporary files, ownership/target rechecks and atomic publication; real NTFS tests preserve planted fixed temporary paths, late foreign markers/recipes and hard-linked copies, with cleanup after failed replacement. The broader pre-existing engine writers were not changed by this scoped repair.
+
+The separately forwarded maintenance draft was independently reviewed and preserved byte-for-byte outside executable source. Its checkpoint, dependency and shared-environment issues are documented in [handoff reconciliation](../docs/HANDOFF-RECONCILIATION.md); none of its executable changes was applied.
+
+23 offline AI protocol/privacy tests cover three fixed provider adapters, local keyless guidance, session-only key connection, exact-preview approval, free-account acknowledgement, simulation rejection, redirect refusal, response/deadline bounds, key echoes, unsupported/truncated responses, quota errors and no retries/fallback. Separate HTTP/UI checks verify authorization, conflict responses and local simulated guidance. No new-provider inference call was made: account eligibility, keys, quotas and actual generated answers remain unverified.
+
+Actual Chromium interactions exercised the 100-action catalog, all ten browser controls, saved favorites, explicit profile Apply, JSON/ZIP downloads, keyboard focus, denied storage, CSP and the unchanged countdown/pause flow. The final AI UI was exercised with completed synthetic reports and local fixtures: built-in guidance works without keys, cloud approval resets on selection changes, two acknowledgements are required, key fields clear, and results render as text. No external AI service was contacted. At 400 pixels and 125% text size the page had no horizontal overflow. Public screenshots are visibly labeled simulations.
+
+All 30 native read-only diagnostics were also exercised against the existing selected tools on the owner's Windows laptop. The local audit recorded 19 observed results, 10 review findings, and one independently unavailable dashboard-lifecycle observation without reading its private capability. Review findings included memory/restart readiness, PATH routing, preserved junction aliases, partial storage totals, ownership-marker gaps and unsigned executables. Official Node/npm catalogs, Python dependency consistency, editor extensions, matched Playwright cache and certificate-verified TLS probes succeeded. The bounded storage scan reports partial totals rather than pretending it scanned everything. Private audit details remain outside Git.
+
+PR #1's exact documentation head was independently reviewed: 100 unique roadmap rows, valid dependency DAG, complete fields, immutable source targets and green Windows/Linux checks. It merged at `87c21ddd8ed176d7924140a0b1c33ac9ce641b7f`. Its proposal inventory is separate from the implemented Feature Studio catalog; [status reconciliation](../docs/ROADMAP-STATUS.md) records counterparts, partial coverage and planned work.
+
+The release build and payload/migration checks establish source-byte correspondence. GitHub CI repeats checks at published commits, and release assets are verified by downloading them again. No version 3.0 full-tool reinstall or extra paid model round trip was needed for this dashboard/report expansion. The actual full-install observations below belong to earlier builds and are retained as historical evidence.
 
 ## Application checks
 
-116 regression tests pass locally on Windows. Coverage includes interpreter selection with a full selected-pack wheel solution, explicit resolution rejection versus transport errors, hashed package locks, pack imports and version matching, candidate preservation, exact-channel timeout retries, WebView2 registry verification, catalog mismatches, native PowerShell JSON under a foreign module search path, safe original PATH backups, npm version/warning separation, and concurrent HTTP report reads while reports are replaced. Signed local Terminal recovery and exact per-user Canary side-by-side installation have dedicated failure and cancellation checks.
+The earlier 2.0.4 line had 116 passing regression tests. Coverage includes interpreter selection with a full selected-pack wheel solution, explicit resolution rejection versus transport errors, hashed package locks, pack imports and version matching, candidate preservation, exact-channel timeout retries, WebView2 registry verification, catalog mismatches, native PowerShell JSON under a foreign module search path, safe original PATH backups, npm version/warning separation, and concurrent HTTP report reads while reports are replaced. Signed local Terminal recovery and exact per-user Canary side-by-side installation have dedicated failure and cancellation checks.
 
 Existing coverage also checks architecture/release selection, secret redaction, archive traversal, Windows junctions, configuration conflict preservation, ownership-limited cleanup, process exit evidence, local capability/origin/Host checks, simulation labeling, and rejection of a second worker. Astra independently reviewed the earlier 2.0.2 repair. The 2.0.3 npm and .NET changes were additionally checked through regression tests and actual isolated runtime/package operations.
 

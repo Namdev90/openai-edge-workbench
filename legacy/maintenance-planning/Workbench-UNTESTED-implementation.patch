@@ -1,0 +1,252 @@
+diff --git a/source/app.py b/source/app.py
+index 1c177ee..18f089a 100644
+--- a/source/app.py
++++ b/source/app.py
+@@ -63,6 +63,9 @@ def make_server(workbench:Workbench,token:str|None=None):
+                     content=f.read_bytes() if f.is_file() else None
+                 if content is not None:self.response(200,content,'text/plain; charset=utf-8')
+                 else:self.response(404,{'error':'No report yet.'})
++            elif path=='/api/recipes':
++                try:self.response(200,{'recipes':workbench.recipes()})
++                except (OSError,ValueError) as exc:self.response(400,{'error':str(exc)})
+             else:self.response(404,{'error':'Not found.'})
+         def do_POST(self):
+             if not self.allowed(api=True,write=True):return
+@@ -79,6 +82,13 @@ def make_server(workbench:Workbench,token:str|None=None):
+                 if path=='/api/start':
+                     started=workbench.start(body)
+                     self.response(200 if started else 409,{'started':started})
++                elif path=='/api/preview':
++                    self.response(200,workbench.preview(body))
++                elif path=='/api/save-recipe':
++                    self.response(200,workbench.save_recipe(body))
++                elif path=='/api/continue-installer':
++                    if set(body)!={'id'}:raise ValueError('Installer ID required.')
++                    workbench.acknowledge_checkpoint(body['id']);self.response(200,{'continued':True})
+                 elif path=='/api/stop':
+                     workbench.cancel.set();workbench.log('Stop requested. The current command is allowed to finish.','warning')
+                     self.response(200,{'stopping':True})
+diff --git a/source/engine.py b/source/engine.py
+index 16f1c8c..548208c 100644
+--- a/source/engine.py
++++ b/source/engine.py
+@@ -30,8 +30,9 @@ import urllib.parse
+ import urllib.request
+ import uuid
+ import zipfile
++import maintenance
+ 
+-VERSION = '2.0.4-preview.1'
++VERSION = '2.1.0-preview.1'
+ SCHEMA = 'openai-edge-workbench/2'
+ ROOT_NAME = 'OpenAI-Edge-Workbench'
+ DOCS_MCP = 'https://developers.openai.com/mcp'
+@@ -440,6 +441,56 @@ class Workbench:
+         self.env.update({'PYTHONUTF8':'1','PYTHONIOENCODING':'utf-8','NO_COLOR':'1','CI':'1',
+                          'UV_NO_CONFIG':'1','UV_PYTHON_INSTALL_DIR':str(self.root/'runtimes'/'uv-python')})
+         self.current_result: dict | None = None
++        self.selection = None
++        self.pending_checkpoint = None
++        self.checkpoint_event = threading.Event()
++
++    def preview(self, request:dict) -> dict:
++        selection=maintenance.request_plan(request,default_options(),build_plan)
++        selected={item['id'] for item in selection['plan']}
++        rows=[]
++        for item in selection['plan']:
++            family={'python-packages':'python','documents':'python','science':'python','playwright':'javascript','openai-cli':'openai-cli'}.get(item['id'],item['id'])
++            known=self.active.get(family,{})
++            rows.append({**item,'observed_managed_version':redact(known.get('version','Not recorded; system inventory not performed')),
++                         'target_version':'Not resolved: execution will query the configured official source/channel.',
++                         'impact':maintenance.impact(item,selected)})
++        checks=[{'name':'Windows platform','blocking':os.name!='nt' and not self.simulate,'detail':platform.system()},
++                {'name':'Supported architecture','blocking':False,'detail':platform.machine()},
++                {'name':'Managed-root access','blocking':not os.access(self.root,os.W_OK),'detail':'Write access available' if os.access(self.root,os.W_OK) else 'Write access unavailable'}]
++        try:
++            free=shutil.disk_usage(self.root).free
++            checks.append({'name':'Free disk space','blocking':free<4*1024**3,'detail':f'{free//1024**3} GiB free; existing minimum is 4 GiB. Full selected download/staging size remains unknown.'})
++        except OSError:
++            checks.append({'name':'Free disk space','blocking':True,'detail':'Unable to inspect free space.'})
++        if any(row['kind']=='winget' for row in rows):
++            checks.append({'name':'Microsoft App Installer / WinGet','blocking':not bool(self.find('winget.exe')) and not self.simulate,'detail':'Found' if self.find('winget.exe') else 'Unavailable; install App Installer through Microsoft Store.'})
++        return {'rows':rows,'checks':checks,'blocked':any(check['blocking'] for check in checks),
++                'requested':selection['requested'],'cost_free':selection['cost_free'],
++                'note':'Read-only local preview. Targets and full compatibility are unresolved; this is not a pinned release approval. No commands, installs or model requests were run.'}
++
++    def recipes(self) -> list[dict]:
++        path=self.root/'recipes.json';assert_regular_path(path)
++        if not path.exists():return []
++        if path.stat().st_size>65536:raise ValueError('Recipe file is too large.')
++        data=json.loads(path.read_text(encoding='utf-8'))
++        if not isinstance(data,dict) or data.get('schema')!=maintenance.RECIPE_SCHEMA or not isinstance(data.get('recipes'),list) or len(data['recipes'])>30:
++            raise ValueError('Unsupported recipe file.')
++        return [maintenance.validate_recipe(value,default_options(),build_plan) for value in data['recipes']]
++
++    def save_recipe(self,value:dict):
++        recipe=maintenance.validate_recipe(value,default_options(),build_plan)
++        with self.lock:
++            if self.started:raise ValueError('Recipes can be changed before starting a run.')
++            recipes=self.recipes();recipes=[r for r in recipes if r['name'].casefold()!=recipe['name'].casefold()]
++            if len(recipes)>=30:raise ValueError('At most 30 recipes are supported.')
++            recipes.append(recipe);atomic_json(self.root/'recipes.json',{'schema':maintenance.RECIPE_SCHEMA,'recipes':recipes})
++        return recipe
++
++    def acknowledge_checkpoint(self,key:str):
++        with self.lock:
++            if not isinstance(key,str) or not self.pending_checkpoint or self.pending_checkpoint['id']!=key or self.cancel.is_set():raise ValueError('No matching installer checkpoint.')
++            self.pending_checkpoint=None;self.checkpoint_event.set()
+ 
+     def log(self, message: str, level: str='info') -> None:
+         message = redact(message).replace('\x00','')[:10000]
+@@ -461,7 +512,7 @@ class Workbench:
+                     'total':len(self.plan) if self.plan else len(build_plan(self.options)),
+                     'report_ready':(self.run_dir/'Paste-Into-ChatGPT.txt').exists(),
+                     'terminal_ready':(self.root/'Open-Edge-Terminal.cmd').is_file(),
+-                    'report_location':str(self.run_dir)}
++                    'report_location':str(self.run_dir),'checkpoint':self.pending_checkpoint}
+ 
+     def run_command(self, argv: list[str|Path], *, timeout: int=900, quiet: bool=False,
+                     cwd: Path|None=None, env: dict|None=None, label: str='') -> CommandResult:
+@@ -618,19 +669,27 @@ class Workbench:
+     def start(self,options:dict) -> bool:
+         with self.lock:
+             if self.started:return False
+-            unknown=set(options)-set(default_options())
+-            if unknown or any(type(v) is not bool for v in options.values()):raise ValueError('Invalid option')
+-            self.options={**default_options(),**options}
+-            self.started=True;self.plan=build_plan(self.options)
++            selection=maintenance.request_plan(options,default_options(),build_plan)
++            if selection['selective'] and self.preview(options)['blocked']:raise ValueError('Readiness checks block this selection; inspect the preview.')
++            self.selection=selection;self.options=selection['options']
++            self.started=True;self.plan=selection['plan']
+         threading.Thread(target=self.execute,daemon=False).start()
+         return True
+ 
+     def execute(self):
+         self.report['options']=self.options
++        if self.selection:self.report['maintenance_selection']={k:v for k,v in self.selection.items() if k!='plan'}
+         try:
+             if os.name!='nt' and not self.simulate:raise StopRun('This installer requires Windows; no system changes were made.')
+             for item in self.plan:
+                 if self.cancel.is_set():break
++                if self.selection and self.selection['review_installers'] and item['kind']=='winget':
++                    self.checkpoint_event.clear()
++                    with self.lock:self.pending_checkpoint={'id':item['id'],'name':item['name'],'detail':'The selected Windows installer may show UAC or Store sign-in and may request a restart. Workbench never initiates a reboot.'}
++                    while not self.checkpoint_event.wait(.25):
++                        if self.cancel.is_set():break
++                    with self.lock:self.pending_checkpoint=None
++                    if self.cancel.is_set():break
+                 with self.lock:
+                     self.current=item['name'];row={**item,'status':'RUNNING','started_utc':utc(),'detail':''}
+                     self.results.append(row);self.current_result=row
+@@ -1508,18 +1567,25 @@ class Workbench:
+         self.save_state()
+ 
+     def step_report(self):
++        if self.selection and self.selection['selective'] and not ({item['id'] for item in self.plan}&maintenance.RUNTIME_IDS):
++            self.current_result['detail']='Selective maintenance report only. Existing managed shims, user PATH and desktop shortcuts were not rewritten.'
++            return
+         self.activate_candidates()
+         bin_dir=self.root/'bin';bin_dir.mkdir(parents=True,exist_ok=True)
+         def bat_path(text):return str(text).replace('%','%%')
+         aliases={'codex':['codex','codex-edge'],'openai-api':['openai-api'],'python':['python-edge'],'node':['node-edge'],'npm':['npm','npm-edge'],'dotnet':['dotnet-edge']}
+         for name,names in aliases.items():
++            if self.selection and self.selection['selective']:
++                chosen={item['id'] for item in self.plan}
++                required={'npm':'node','python':'python','openai-api':'openai-cli'}.get(name,name)
++                if required not in chosen:continue
+             if not self.active.get(name):continue
+             command=self.active[name]['command']
+             for alias in names:
+                 line=' '.join('"'+bat_path(x)+'"' for x in command)
+                 text='@echo off\r\nchcp 65001 >nul\r\n'+line+' %*\r\nexit /b %errorlevel%\r\n'
+                 (bin_dir/(alias+'.cmd')).write_bytes(text.encode('utf-8'))
+-        if self.active.get('npm'):
++        if self.active.get('npm') and (not self.selection or not self.selection['selective'] or any(item['id']=='node' for item in self.plan)):
+             host,cli=self.active['npm']['command'][:2]
+             npx=Path(cli).with_name('npx-cli.js')
+             if npx.is_file():
+diff --git a/source/maintenance.py b/source/maintenance.py
+new file mode 100644
+index 0000000..d01c6b1
+--- /dev/null
++++ b/source/maintenance.py
+@@ -0,0 +1,78 @@
++"""Bounded maintenance selections. No commands or user-provided download URLs."""
++from __future__ import annotations
++import re
++
++RECIPE_SCHEMA = 'workbench-recipes/1'
++DEPENDENCIES = {
++    'codex': ('node',), 'javascript': ('node',), 'playwright': ('node',),
++    'python': ('uv',), 'python-packages': ('python',),
++    'documents': ('python-packages',), 'science': ('python-packages',),
++    'extensions': ('editor',), 'migrate': ('editor',),
++    'docs-mcp': ('codex',), 'live': ('codex',),
++}
++CONTROL_IDS = {'inventory', 'verify', 'report'}
++RUNTIME_IDS = {'node', 'codex', 'openai-cli', 'python', 'python-packages',
++               'documents', 'science', 'javascript', 'playwright', 'dotnet'}
++
++def request_plan(request, defaults, catalog_builder):
++    if not isinstance(request, dict): raise ValueError('Object required.')
++    structured = 'options' in request or any(k in request for k in ('components','cost_free','review_installers'))
++    if structured:
++        if set(request)-{'options','components','cost_free','review_installers'}: raise ValueError('Unknown maintenance field.')
++        options=request.get('options',{})
++    else: options=request
++    if not isinstance(options,dict) or set(options)-set(defaults) or any(type(v) is not bool for v in options.values()):
++        raise ValueError('Invalid option.')
++    options={**defaults,**options}
++    cost_free=request.get('cost_free',False) if structured else False
++    review=request.get('review_installers',False) if structured else False
++    if type(cost_free) is not bool or type(review) is not bool: raise ValueError('Maintenance controls must be booleans.')
++    # The selectable catalog includes all optional adapters; dependencies do not
++    # silently disappear because a broad pack checkbox is off.
++    catalog=catalog_builder({k:True for k in defaults})
++    by_id={item['id']:item for item in catalog}
++    explicit=request.get('components') if structured else None
++    if explicit is not None:
++        if not isinstance(explicit,list) or not explicit or len(explicit)>len(catalog): raise ValueError('Select at least one component.')
++        if any(not isinstance(k,str) or k not in by_id or k in CONTROL_IDS for k in explicit): raise ValueError('Unknown or non-selectable component.')
++        if len(set(explicit))!=len(explicit): raise ValueError('Duplicate component.')
++        selected=set(explicit)
++    else: selected={item['id'] for item in catalog_builder(options)}-CONTROL_IDS
++    if cost_free: selected.discard('live'); options['live']=False
++    requested=set(selected)
++    def include(key):
++        for dep in DEPENDENCIES.get(key,()):
++            if dep not in selected: selected.add(dep); include(dep)
++    for key in list(selected): include(key)
++    # Resolver pack scope must describe exactly what is selected, not unrelated
++    # broad packs. It still resolves core imports before activating Python.
++    options.update(toolkit='documents' in selected,science='science' in selected,
++                   browser='playwright' in selected or 'canary' in selected,
++                   dotnet='dotnet' in selected,migrate='migrate' in selected,
++                   docs_mcp='docs-mcp' in selected,live='live' in selected)
++    plan=[{**item,'selection_reason':('requested' if item['id'] in requested else 'required dependency' if item['id'] not in CONTROL_IDS else 'run bookkeeping')} for item in catalog if item['id'] in selected|CONTROL_IDS]
++    return {'options':options,'plan':plan,'requested':sorted(requested),
++            'selective':explicit is not None,'cost_free':cost_free,'review_installers':review}
++
++def impact(item, selected):
++    key=item['id']; wing=item['kind']=='winget'
++    runtime_report=key=='report' and bool(set(selected)&RUNTIME_IDS)
++    return {'network':wing or key in RUNTIME_IDS|{'extensions','migrate','docs-mcp','verify','live'},
++            'possible_uac_or_sign_in':wing, 'possible_restart':wing,
++            'configuration':key in {'inventory','migrate','docs-mcp'} or runtime_report,
++            'quota_or_billing':key=='live',
++            'interactive_checkpoint':wing,
++            'scope':('Selected Windows package; its installer may ask for approval/sign-in.' if wing else
++                     'Managed tool launchers and user PATH; no machine PATH edit.' if runtime_report else
++                     'User-selected read-only model request; existing authentication and billing apply.' if key=='live' else
++                     'Existing adapter boundaries apply; no automatic reboot or security-policy changes.')}
++
++def validate_recipe(value, defaults, builder):
++    if not isinstance(value,dict) or set(value)!={'name','request'}: raise ValueError('Recipe requires name and request.')
++    name=value['name']
++    if not isinstance(name,str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9 _-]{0,47}',name): raise ValueError('Use 1-48 letters, digits, spaces, underscores or hyphens for the recipe name.')
++    request=value['request']
++    if not isinstance(request,dict) or set(request)!={'options','components','cost_free','review_installers'}: raise ValueError('Recipe requires a complete maintenance request.')
++    normalized=request_plan(request,defaults,builder)
++    if not normalized['selective']: raise ValueError('Recipe must list selected components.')
++    return {'name':name,'request':request}

@@ -1,0 +1,87 @@
+name: Bug report
+description: Report an installation, dashboard, compatibility or reporting problem.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share a reproducible problem and the smallest useful, sanitized evidence. Never upload credentials, `local-session.json`, authentication files, private backups or complete personal logs. Public issues are not appropriate for vulnerabilities or exposed credentials; follow the repository's security guidance.
+  - type: input
+    id: version
+    attributes:
+      label: Workbench version or commit
+      description: Copy the version from the report or identify the tested commit.
+      placeholder: "Version or full commit SHA"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Operating system and architecture
+      description: Include Windows version and x64/ARM64; identify Linux when reporting a development test.
+      placeholder: "Windows 11, x64"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Download or setup launcher
+        - Dashboard or feature studio
+        - Package installation or update
+        - Compatibility or release selection
+        - Migration or managed cleanup
+        - Diagnostics or report export
+        - Development tests or release build
+        - Another area
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Run mode
+      options:
+        - Real Windows run
+        - Simulation
+        - Automated test
+        - Not applicable
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include the selected packs or feature ID, command used and any relevant prompts.
+      placeholder: |
+        1. Launch using…
+        2. Select…
+        3. Observe…
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Actual behavior
+      description: Include the exact status or warning and whether the operation completed, stopped or timed out.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Paste only a reviewed excerpt. Include target and observed versions where relevant. Do not attach an entire private report.
+      render: text
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I reviewed my text and attachments and removed credentials, session capabilities and private personal information.
+          required: true

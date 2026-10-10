@@ -15,10 +15,13 @@ class AllToolsLaunchTests(unittest.TestCase):
                 record=json.loads(session.read_text());origin='http://127.0.0.1:'+str(record['port'])
                 headers={'X-Workbench-Token':record['token'],'Origin':origin,'Content-Type':'application/json'}
                 with urllib.request.urlopen(urllib.request.Request(origin+'/api/status',headers=headers),timeout=5) as response:status=json.load(response)
-                self.assertTrue(all(status['options'].values()))
+                self.assertTrue(all(value for name,value in status['options'].items() if name!='live'))
+                self.assertFalse(status['options']['live'],'Public one-click setup must not make an automatic model request.')
                 self.assertIn('dotnet',[row['id'] for row in status['plan']])
+                self.assertNotIn('live',[row['id'] for row in status['plan']])
                 with urllib.request.urlopen(origin+'/',timeout=5) as response:html=response.read()
                 self.assertIn(b'name="dotnet" checked>',html)
+                self.assertNotIn(b'name="live" checked',html)
             finally:
                 if origin:
                     with urllib.request.urlopen(urllib.request.Request(origin+'/api/quit',data=b'{}',headers=headers),timeout=5) as response:response.read()

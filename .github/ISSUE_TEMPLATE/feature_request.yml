@@ -1,0 +1,59 @@
+name: Feature request
+description: Propose a focused capability with a clear effect and a verifiable outcome.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe a user problem and an observable result. Please check the current feature catalog before proposing a duplicate. Do not include private account information, credentials or complete diagnostic logs.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem should this solve?
+      description: Explain the situation and the person who would benefit.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Proposed behavior
+      description: Describe what the user would do, what Workbench would do and the result they would see.
+    validations:
+      required: true
+  - type: dropdown
+    id: effect
+    attributes:
+      label: Expected effect
+      options:
+        - Read-only local inspection
+        - Display or accessibility preference
+        - Report or export
+        - Installation plan or selection
+        - Explicit installation or update
+        - Explicit settings migration or cleanup
+        - External connection or model request
+        - Needs discussion
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Official sources and compatibility
+      description: Link official documentation or distribution channels when relevant. Identify platform requirements and supported preview channels.
+  - type: textarea
+    id: verification
+    attributes:
+      label: How would we verify it works?
+      description: Suggest concrete success criteria, useful tests and what should remain visible when a check cannot complete.
+    validations:
+      required: true
+  - type: textarea
+    id: preservation
+    attributes:
+      label: Existing data, permissions and costs
+      description: Identify settings or files that must be preserved, permissions required, network usage and any quota or paid-service impact.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Include existing features or tools that already address part of the problem.
