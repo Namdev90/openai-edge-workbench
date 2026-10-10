@@ -1,10 +1,14 @@
 # Verification record
 
-Build: Namu AI Workbench 3.0.0-preview.1, 10 October 2026.
+Build: Namu AI Workbench 3.0.0-preview.2, 10 October 2026.
 
 ## Version 3.0 acceptance record
 
-275 application tests ran locally on Windows: 272 passed, no failures, and three symlink tests skipped because Windows requires additional symlink privilege. The 23 setup/security checks passed separately under Windows PowerShell 5.1 and PowerShell 7. JavaScript syntax, the exact 100-entry documented/executable catalog, active documentation links, SVG/PNG assets and proposal-ID separation were checked.
+282 application tests ran locally on Windows: 279 passed, no failures, and three symlink tests skipped because Windows requires additional symlink privilege. The 23 setup/security checks passed separately under Windows PowerShell 5.1 and PowerShell 7. JavaScript syntax, the exact 100-entry documented/executable catalog, active documentation links, SVG/PNG assets and proposal-ID separation were checked.
+
+Preview.2 addresses an intermittent Windows connection reset observed during a later check of the actual installed launcher cache, after preview.1 passed local and CI checks. Rejected requests discard only unambiguously framed raw bytes within 8 KiB and a 250 ms overall deadline, then flush and close the error response. Authorization still precedes JSON parsing. Regression coverage includes 150 real denied POST requests, stalled bodies, ambiguous framing and slow-drip deadlines. Unsafe oversized or ambiguous framing is refused without unbounded draining; complete response delivery to such malformed senders is not guaranteed. Astra independently reviewed this fix without finding a release blocker.
+
+A real Windows PowerShell subprocess also verifies that a failed NoLaunch bootstrap exits with a nonzero status and its diagnostic, without installing anything or opening a modal error dialog. Interactive failures retain their visible error message. These seven added tests do not install toolkits or call an AI provider.
 
 New coverage includes all 30 diagnostic handlers, all 35 report analyses, all 25 profile/plan/export handlers, the ten client controls, actual protected HTTP feature jobs, admission limits, simulation guards, malformed history, secret-field redaction, JSON export round trips, HTML/CSV safety, support ZIP checksums, recipe preservation, and the all-tools launch excluding automatic model requests.
 

@@ -2,6 +2,14 @@
 
 Preview releases can encounter publisher/channel changes. Version observations describe the checked run, not permanent pins for future toolkit installs.
 
+## 3.0.0-preview.2 — 10 October 2026
+
+- Completed rejected local HTTP requests without leaving small POST bodies unread, preventing intermittent Windows connection resets during bootstrap self-tests. Authorization remains checked before JSON parsing; discarding bytes has a strict size limit and overall deadline.
+- Rejected ambiguous or unsupported request framing and preserved the original capability, Host and same-origin protections. No unauthorized action is retried.
+- Made failed NoLaunch verification exit with its diagnostic and failure code without opening a modal error window. Interactive launches retain their visible error message.
+
+The targeted update follows an intermittent failure observed while checking the actual installed launcher cache after preview.1 passed CI. Existing toolkit runtimes and configuration are preserved.
+
 ## 3.0.0-preview.1 — 10 October 2026
 
 - Added 100 Feature Studio actions: 30 diagnostics, 35 report analyses, 25 profile/plan/export/recipe actions, and ten dashboard controls.
