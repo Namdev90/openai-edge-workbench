@@ -4,7 +4,7 @@ Build: OpenAI Edge Workbench 2.0.2-preview.1, 10 October 2026.
 
 ## Application checks
 
-99 regression tests pass locally on Windows. Coverage includes interpreter selection with a full selected-pack wheel solution, explicit resolution rejection versus transport errors, hashed package locks, pack imports and version matching, candidate preservation, exact-channel timeout retries, WebView2 registry verification, catalog mismatches, native PowerShell JSON under a foreign module search path, safe original PATH backups, npm version/warning separation, and concurrent HTTP report reads while reports are replaced. Signed local Terminal recovery and exact per-user Canary side-by-side installation have dedicated failure and cancellation checks.
+102 regression tests pass locally on Windows. Coverage includes interpreter selection with a full selected-pack wheel solution, explicit resolution rejection versus transport errors, hashed package locks, pack imports and version matching, candidate preservation, exact-channel timeout retries, WebView2 registry verification, catalog mismatches, native PowerShell JSON under a foreign module search path, safe original PATH backups, npm version/warning separation, and concurrent HTTP report reads while reports are replaced. Signed local Terminal recovery and exact per-user Canary side-by-side installation have dedicated failure and cancellation checks.
 
 Existing coverage also checks architecture/release selection, secret redaction, archive traversal, Windows junctions, configuration conflict preservation, ownership-limited cleanup, process exit evidence, local capability/origin/Host checks, simulation labeling, and rejection of a second worker. An independent Astra review ran the suite and checked the fixes.
 

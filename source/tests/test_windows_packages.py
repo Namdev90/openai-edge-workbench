@@ -221,6 +221,15 @@ class PackageRecoveryTests(unittest.TestCase):
                 with self.assertRaises(engine.StopRun):workbench.install_winget(item)
             recovery.assert_not_called()
 
+    def test_terminal_security_failure_never_triggers_local_recovery(self):
+        with tempfile.TemporaryDirectory() as root:
+            workbench=self.workbench(root)
+            item=next(item for item in engine.build_plan(engine.default_options()) if item['id']=='terminal')
+            results=[engine.CommandResult(1,'missing'),engine.CommandResult(0,self.version),engine.CommandResult(0x8A15002D,'Security failure with an old 0x80072ee2 diagnostic')]
+            with patch.object(workbench,'find',return_value='winget.exe'),patch.object(workbench,'run_command',side_effect=results),patch.object(workbench,'install_terminal_preview_local') as recovery:
+                with self.assertRaises(engine.OperationError):workbench.install_winget(item)
+            recovery.assert_not_called()
+
     def test_canary_manifest_selects_exact_architecture_and_preserves_stable(self):
         with tempfile.TemporaryDirectory() as root:
             workbench=self.workbench(root);workbench.arch='arm64'
@@ -283,6 +292,26 @@ class PackageRecoveryTests(unittest.TestCase):
             self.assertEqual(workbench.current_result['actual'],'157.0.8095.0')
             self.assertEqual(workbench.current_result['winget_correlated_before'],'154.0.8037.98')
             self.assertIn('Per-user',workbench.current_result['detail'])
+
+    def test_missing_canary_never_upgrades_correlated_stable_chrome(self):
+        with tempfile.TemporaryDirectory() as root:
+            workbench=self.workbench(root)
+            item=next(item for item in engine.build_plan(engine.default_options()) if item['id']=='canary')
+            results=[engine.CommandResult(0,'Google Chrome Google.Chrome.Canary 154.0.8037.98'),engine.CommandResult(0,'157.0.8095.0')]
+            before=self.canary_inspection();after=self.canary_inspection('157.0.8095.0')
+            with patch.object(workbench,'find',return_value='winget.exe'),patch.object(workbench,'run_command',side_effect=results) as commands,patch.object(workbench,'canary_registration',return_value=before),patch.object(workbench,'install_canary_local',return_value=after) as install:
+                workbench.install_winget(item)
+            install.assert_called_once_with('157.0.8095.0',before)
+            self.assertEqual(commands.call_count,2)
+            self.assertEqual(workbench.current_result['status'],'VERIFIED')
+            self.assertEqual(workbench.current_result['before'],'Canary SxS binary not found')
+
+    def test_stable_path_is_never_accepted_as_canary_binary_evidence(self):
+        with tempfile.TemporaryDirectory() as root:
+            workbench=self.workbench(root);inspection=self.canary_inspection('157.0.8095.0')
+            inspection['executables'][0]['path']=r'C:\Program Files\Google\Chrome\Application\chrome.exe'
+            with patch.object(workbench,'ps_json',return_value=inspection):
+                with self.assertRaisesRegex(engine.OperationError,'ordinary Chrome'):workbench.canary_registration()
 
     def test_newer_existing_canary_is_preserved_without_downgrade(self):
         with tempfile.TemporaryDirectory() as root:

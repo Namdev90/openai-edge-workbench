@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "version": "2.0.2-preview.1",
-  "launcherSha256": "01c4cbd9390ff4cce8d2f614c4246db2a3a593b38afc65a5dff7a3ecf72913f5",
-  "payloadSha256": "03396dd2c875609f683fbf51b55c8a7a9d754e32de724851e3a322290b1da4db",
+  "launcherSha256": "9832538d1e605ea6933efda357babe07610efac9bff576cde703276c5b752a30",
+  "payloadSha256": "8f4ce98c24eb5b4b94d607d667fdfab32401bfeb26fb488c0e928fa511547772",
   "setupSha256": "12c84bba8543a9ee822b9519f4fed2314f5349c954c34b966861c24b10eff7b7",
   "setupLauncherSha256": "210419178701eae4c412248720c409f71a8d09dd5dd6c200808e45e6bac85938",
   "sourceFiles": {
@@ -25,6 +25,6 @@
     "tests/test_python_compatibility.py": "7f7b6518ad818a313380a534fa2d09d72b7c5aa96b2aab814ab819e59aee6c5b",
     "tests/test_regressions.py": "56455074d21ebab873ff94fffadae8d756272c97a19ca74110b09e05e19541a8",
     "tests/test_windows_packages.py": "1529c7022d252a8ca257c94c0505f3338302de6a86231e8e6ced37c5d132709d",
-    "VERIFICATION.md": "7d1b1bff1c4735e7a0f270213c82276771959b2b7d586bb1e02357fc0021769f"
+    "VERIFICATION.md": "0e24625ccc93d40937ee7193cea0517123d53347dbb3d67abebebf41e63f0fe8"
   }
 }

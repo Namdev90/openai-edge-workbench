@@ -792,6 +792,8 @@ class Workbench:
         switches=re.search(r'(?m)^InstallerSwitches:\r?\n((?:[ \t].*(?:\r?\n|$))+)',manifest)
         if not switches or re.findall(r'(?m)^\s+Custom:\s*([^\r\n]*)$',switches[1])!=['--chrome-sxs --do-not-launch-chrome'] or any(re.match(r'\s+([^:]+):',line).group(1) not in ('Custom','Log') for line in switches[1].splitlines() if re.match(r'\s+([^:]+):',line)):
             raise OperationError('Official Canary side-by-side switches were not uniquely verified; no browser update attempted.')
+        if not re.search(r'(?m)^InstallModes:\r?\n- silent\r?$',manifest):
+            raise OperationError('Official Canary silent install mode was not verified; no browser update attempted.')
         blocks=re.findall(r'(?ms)^- Architecture:\s*(x64|arm64|x86)\r?\n(.*?)(?=^- Architecture:|\Z)',manifest)
         selected=[body for cpu,body in blocks if cpu==arch]
         if len(selected)!=1:raise OperationError('Official Canary architecture selection was ambiguous; no browser update attempted.')
@@ -885,6 +887,7 @@ class Workbench:
                     return
                 channel=self.install_canary_local(target,channel)
                 actual=self.canary_user_binary(channel)['version']
+            if actual!=target:raise OperationError('Canary recovery did not return the exact selected per-user binary version; latestness was not verified.')
             self.current_result.update(status='VERIFIED',actual=actual,detail='Per-user Chrome Canary SxS binary and valid Google signature match the exact selected catalog version. Other installation scopes were inspected only; browser UI not exercised.')
             return
         action='upgrade' if before.code==0 else 'install'
