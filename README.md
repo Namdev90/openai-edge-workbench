@@ -99,6 +99,19 @@ The dashboard binds to loopback only. API calls require a per-session capability
 
 [Architecture](docs/ARCHITECTURE.md) · [Development](docs/DEVELOPMENT.md) · [Handoff reconciliation](docs/HANDOFF-RECONCILIATION.md) · [Security policy](SECURITY.md) · [Changelog](CHANGELOG.md) · [Publisher references](source/SOURCES.md) · [Researched alternatives](ALTERNATIVES.md)
 
+## The complete language atlas
+
+A separate, playful [language-stat experiment](language-stat-experiment/README.md) represents **all 836 entries** in a pinned GitHub Linguist catalog, including uncommon languages and data formats. Each has a detailed reference record with its identifiers, recognition rules, aliases, file conventions and statistical group. The [searchable atlas](https://namdev90.github.io/openai-edge-workbench/) and [full catalog](language-stat-experiment/catalog.json) keep every entry visible individually. You can also download the [standalone HTML](language-stat-experiment/index.html) and open it locally.
+
+<details>
+<summary><strong>Open the complete atlas — every language, no “Other” bucket</strong></summary>
+
+![Complete atlas of all 836 GitHub Linguist catalog entries](language-stat-experiment/atlas.svg)
+
+</details>
+
+The repository deliberately classifies those reference records through documented Linguist overrides, so its native language percentages include this experiment. These are original metadata fixtures, not working implementations in 836 languages. GitHub combines related entries into parent groups and controls its own chart; the atlas displays every catalog entry separately. The experiment lives outside the installer and adds no runtimes or tool dependencies.
+
 ## Contributing and support
 
 Use the [issue templates](https://github.com/Namdev90/openai-edge-workbench/issues/new/choose) for a redacted bug report or a concrete feature request. Read [CONTRIBUTING.md](CONTRIBUTING.md) before adding an adapter. Report security issues [privately](https://github.com/Namdev90/openai-edge-workbench/security/advisories/new).

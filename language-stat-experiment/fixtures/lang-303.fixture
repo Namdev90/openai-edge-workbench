@@ -1,0 +1,41 @@
+LANGUAGE LAB REFERENCE FIXTURE
+Language: Python
+Purpose: original reference metadata for an explicitly labeled GitHub language-stat experiment.
+Program validity: not claimed. Compilation, interpretation and rendering: not performed.
+
+IDENTITY AND UPSTREAM CATEGORY
+Linguist language ID: 303
+Category: programming
+Statistical parent: Python
+The upstream category describes a programming notation. GitHub normally includes this category in language statistics. Identifying a notation does not establish that this reference contains a valid program or that a matching compiler or interpreter is installed.
+
+RECOGNITION REFERENCE
+Primary catalog extension: .py
+All catalog extensions (17): .py, .cgi, .fcgi, .gyp, .gypi, .lmi, .py3, .pyde, .pyi, .pyp, .pyt, .pyw, .rpy, .spec, .tac, .wsgi, .xpy
+Exact filenames (5): .gclient, DEPS, SConscript, SConstruct, wscript
+Explicit upstream aliases (4): py, py3, python3, rusthon
+These are recognition hints copied as metadata from the pinned definition; the fixture intentionally has a neutral .fixture suffix. No real executable or configuration filename is created.
+
+CLASSIFICATION AMBIGUITIES
+- extension .cgi: also associated with Perl, Shell
+- extension .fcgi: also associated with Lua, PHP, Perl, Ruby, Shell
+- extension .rpy: also associated with Ren'Py
+- extension .spec: also associated with RPM Spec, Ruby
+A shared spelling is not proof of a language. GitHub also uses filename rules, interpreters, heuristics and classification when no explicit override applies. This reference does not run those interpreters or validate a grammar.
+
+SYNTAX AND PRESENTATION METADATA
+TextMate scope: source.python
+Upstream color: #3572A5
+A grammar scope and display color are presentation metadata, not evidence of compiler support or working application features.
+
+EXPLICIT STATISTICAL EXPERIMENT
+Canonical language override: linguist-language=Python
+Scoped detectable override: true. Scoped generated/vendored/documentation exclusions: false.
+This definition contributes bytes to its own 'Python' statistical bucket.
+GitHub counts file bytes, not installed tools, compiled programs or feature coverage. This fixture deliberately participates in that display experiment; its bytes remain reference text. GitHub controls grouping, deployed catalog support and asynchronous refresh.
+
+PINNED PROVENANCE AND LIMITS
+Official definition: https://github.com/github-linguist/linguist/blob/538da05f034fa5c83bd81df128d144e208898da3/lib/linguist/languages.yml#L6366
+Catalog raw URL: https://raw.githubusercontent.com/github-linguist/linguist/538da05f034fa5c83bd81df128d144e208898da3/lib/linguist/languages.yml
+Catalog SHA-256: 183243e30496ba53f5f8743b0e39c9f0e0bccc5a32639f7b541cc2285db0e043
+Metadata derives from the MIT-licensed GitHub Linguist catalog; the adjacent Language Lab README retains the upstream notice. This prose was authored for Namu AI Workbench. No third-party example program was copied. The installation dashboard does not load, ship or execute this fixture.

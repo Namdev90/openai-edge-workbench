@@ -1,0 +1,62 @@
+LANGUAGE LAB REFERENCE FIXTURE
+Language: Roff
+Purpose: original reference metadata for an explicitly labeled GitHub language-stat experiment.
+Program validity: not claimed. Compilation, interpretation and rendering: not performed.
+
+IDENTITY AND UPSTREAM CATEGORY
+Linguist language ID: 141
+Category: markup
+Statistical parent: Roff
+The upstream category describes markup or a document/template notation. GitHub normally includes this category in language statistics. Rendering, structural validation and template evaluation are separate tasks; this fixture performs none of them.
+
+RECOGNITION REFERENCE
+Primary catalog extension: .roff
+All catalog extensions (28): .roff, .1, .1in, .1m, .1x, .2, .3, .3in, .3m, .3p, .3pm, .3qt, .3x, .4, .5, .6, .7, .8, .9, .l, .man, .mdoc, .me, .ms, .n, .nr, .rno, .tmac
+Exact filenames (5): eqnrc, mmn, mmt, troffrc, troffrc-end
+Explicit upstream aliases (8): groff, man, manpage, man page, man-page, mdoc, nroff, troff
+These are recognition hints copied as metadata from the pinned definition; the fixture intentionally has a neutral .fixture suffix. No real executable or configuration filename is created.
+
+CLASSIFICATION AMBIGUITIES
+- extension .1: also associated with Roff Manpage
+- extension .1in: also associated with Roff Manpage
+- extension .1m: also associated with Roff Manpage
+- extension .1x: also associated with Roff Manpage
+- extension .2: also associated with Roff Manpage
+- extension .3: also associated with Roff Manpage
+- extension .3in: also associated with Roff Manpage
+- extension .3m: also associated with Roff Manpage
+- extension .3p: also associated with Roff Manpage
+- extension .3pm: also associated with Roff Manpage
+- extension .3qt: also associated with Roff Manpage
+- extension .3x: also associated with Roff Manpage
+- extension .4: also associated with Roff Manpage
+- extension .5: also associated with Roff Manpage
+- extension .6: also associated with Roff Manpage
+- extension .7: also associated with Roff Manpage
+- extension .8: also associated with Roff Manpage
+- extension .9: also associated with Roff Manpage
+- extension .l: also associated with Common Lisp, Lex, PicoLisp
+- extension .man: also associated with Roff Manpage
+- extension .mdoc: also associated with Roff Manpage
+- extension .ms: also associated with MAXScript, MiniScript, Unix Assembly
+- extension .n: also associated with Nemerle
+- extension .nr: also associated with Noir
+- extension .rno: also associated with RUNOFF
+A shared spelling is not proof of a language. GitHub also uses filename rules, interpreters, heuristics and classification when no explicit override applies. This reference does not run those interpreters or validate a grammar.
+
+SYNTAX AND PRESENTATION METADATA
+TextMate scope: text.roff
+Upstream color: #ecdebe
+A grammar scope and display color are presentation metadata, not evidence of compiler support or working application features.
+
+EXPLICIT STATISTICAL EXPERIMENT
+Canonical language override: linguist-language=Roff
+Scoped detectable override: true. Scoped generated/vendored/documentation exclusions: false.
+This definition contributes bytes to its own 'Roff' statistical bucket.
+GitHub counts file bytes, not installed tools, compiled programs or feature coverage. This fixture deliberately participates in that display experiment; its bytes remain reference text. GitHub controls grouping, deployed catalog support and asynchronous refresh.
+
+PINNED PROVENANCE AND LIMITS
+Official definition: https://github.com/github-linguist/linguist/blob/538da05f034fa5c83bd81df128d144e208898da3/lib/linguist/languages.yml#L6970
+Catalog raw URL: https://raw.githubusercontent.com/github-linguist/linguist/538da05f034fa5c83bd81df128d144e208898da3/lib/linguist/languages.yml
+Catalog SHA-256: 183243e30496ba53f5f8743b0e39c9f0e0bccc5a32639f7b541cc2285db0e043
+Metadata derives from the MIT-licensed GitHub Linguist catalog; the adjacent Language Lab README retains the upstream notice. This prose was authored for Namu AI Workbench. No third-party example program was copied. The installation dashboard does not load, ship or execute this fixture.
