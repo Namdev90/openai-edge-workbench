@@ -23,3 +23,7 @@ Versions are discovered at runtime; this is not a fixed-version snapshot.
 - PyPI package index: https://pypi.org/simple/
 
 Catalog package identity is queried using exact IDs at runtime. No missing package ID is replaced by an approximate search result. Publisher package managers may fetch dependencies from their own distribution endpoints. This utility's HTTPS allowlist applies to its own direct downloads, not to every network operation performed inside third-party installers.
+
+- npm engine checks: https://github.com/npm/cli/blob/latest/lib/cli/entry.js and https://github.com/npm/node-semver (default prerelease exclusion).
+- Official npm metadata: https://registry.npmjs.org/npm ; official compatible Node host catalog: https://nodejs.org/dist/index.json .
+- Microsoft release metadata includes go-live release candidates: https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json .

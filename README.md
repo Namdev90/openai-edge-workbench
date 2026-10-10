@@ -16,6 +16,8 @@ The **OpenAI Edge Workbench** desktop shortcut refreshes published source before
 
 Version 2.0.2 repairs the first laptop diagnostic: Python is selected only after a full compatible wheel preflight, WebView2 is checked through Microsoft's registry values, preview network timeouts receive bounded same-channel retries, and native Windows PowerShell produces checked JSON for the original user PATH backup. Report reads and writes are synchronized, and remaining version or npm compatibility warnings stay visible.
 
+Version 2.0.3 retains the newest official Node nightly for tool execution and selects the newest npm separately. Official npm semver checks choose its newest compatible private Node host; no npm warning is suppressed and no engine metadata is patched. npm/npx launchers use that explicit host, while Codex and SDK execution keep the nightly runtime. .NET daily discovery also recognizes release-candidate channels marked go-live.
+
 The setup launcher updates published code. The self-contained OpenAI-Edge-Workbench.cmd in the repository is also available as a snapshot for that release. Neither invents repair code or enables private publisher betas.
 
 Use **Copy report**, or open:

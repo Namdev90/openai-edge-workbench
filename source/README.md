@@ -1,4 +1,4 @@
-# OpenAI Edge Workbench 2.0.2-preview.1
+# OpenAI Edge Workbench 2.0.3-preview.1
 
 Independent, unsigned Windows maintenance utility generated for Namu. It is not an OpenAI product.
 

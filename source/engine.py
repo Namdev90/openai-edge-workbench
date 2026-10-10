@@ -31,7 +31,7 @@ import urllib.request
 import uuid
 import zipfile
 
-VERSION = '2.0.2-preview.1'
+VERSION = '2.0.3-preview.1'
 SCHEMA = 'openai-edge-workbench/2'
 ROOT_NAME = 'OpenAI-Edge-Workbench'
 DOCS_MCP = 'https://developers.openai.com/mcp'
@@ -84,6 +84,12 @@ def choose_npm(meta: dict) -> str:
     if not candidates:
         raise ValueError('No supported public package version was found; no invented tag or fallback used.')
     return max(candidates, key=semver_key)
+
+
+def choose_dotnet_channel(index:dict) -> str:
+    channels=[x for x in index.get('releases-index',[]) if x.get('support-phase') in ('preview','go-live') and re.fullmatch(r'\d+\.\d+',str(x.get('channel-version',''))) and SEMVER.fullmatch(str(x.get('latest-sdk',''))) and SEMVER.fullmatch(x['latest-sdk'])[4] is not None]
+    if not channels:raise OperationError('No advertised .NET preview/RC channel found. No stable SDK substituted.')
+    return max(channels,key=lambda x:tuple(map(int,x['channel-version'].split('.'))))['channel-version']
 
 
 def python_key(text: str) -> tuple:
@@ -280,7 +286,7 @@ def build_plan(options: dict) -> list[dict]:
     wing('editor','VS Code Insiders','Microsoft.VisualStudioCode.Insiders','Insiders')
     wing('terminal','Windows Terminal Preview','Microsoft.WindowsTerminal.Preview','Preview')
     wing('webview','WebView2 runtime','Microsoft.EdgeWebView2Runtime','Latest public Evergreen runtime')
-    add('node','Node.js official nightly')
+    add('node','Node.js official nightly + compatible npm')
     add('codex','Codex CLI - newest public npm build')
     add('openai-cli','Official OpenAI API CLI')
     add('python','Newest compatible CPython for selected packs')
@@ -946,21 +952,16 @@ class Workbench:
         if item['id']=='chatgpt':
             self.report['coverage']['desktop']='Current app ID 9PLM9XGG6VKS requested. Bundled agent updates are separate from the managed npm Codex CLI.'
 
-    def step_node(self):
-        source='https://nodejs.org/download/nightly/index.json'
-        catalog=self.get_json(source)
-        arch=(getattr(self,'arch',None) or architecture())
-        candidates=[x for x in catalog if 'win-'+arch+'-zip' in x.get('files',[]) and SEMVER.fullmatch(str(x.get('version','')))]
-        if not candidates:raise OperationError('No official Node nightly ZIP is published for this architecture. No stable fallback attempted.')
-        selected=max(candidates,key=lambda x:semver_key(x['version']))
-        version=selected['version'];filename=f'node-{version}-win-{arch}.zip'
-        self.current_result.update({'expected':version,'source':source})
-        directory=self.root/'runtimes/node'/f'{version}-{arch}'
+    def node_archive(self,version:str,arch:str,*,nightly:bool) -> Path:
+        if not SEMVER.fullmatch(version) or arch not in ('x64','arm64'):raise OperationError('Invalid official Node archive identity.')
+        filename=f'node-{version}-win-{arch}.zip'
+        directory=self.root/'runtimes'/('node' if nightly else 'npm-host')/f'{version}-{arch}'
+        assert_regular_path(directory)
         exe=directory/f'node-{version}-win-{arch}'/'node.exe'
         marker=directory/'.workbench-owned.json'
         if not (marker.is_file() and exe.is_file()):
             if directory.exists():raise OperationError('An incomplete/unowned Node destination exists. It has been preserved for review: '+str(directory))
-            base=f'https://nodejs.org/download/nightly/{version}/'
+            base=f'https://nodejs.org/'+('download/nightly/' if nightly else 'dist/')+version+'/'
             sums=self.fetch(base+'SHASUMS256.txt').decode('utf-8')
             match=re.search(r'(?im)^([0-9a-f]{64})\s+\*?'+re.escape(filename)+r'\s*$',sums)
             if not match:raise OperationError('Official SHA-256 entry for Node ZIP was not found.')
@@ -968,26 +969,71 @@ class Workbench:
             self.fetch(base+filename,download,match[1],max_bytes=512*1024**2)
             safe_extract(download,directory)
             atomic_json(marker,{'owned_by':SCHEMA,'version':version,'archive_sha256':match[1]})
-        checked=self.require(self.run_command([exe,'--version'],timeout=40,label='Test Node nightly executable'),'Node executable')
-        if not version_matches(checked.out,version):raise OperationError('Downloaded Node version does not match the requested nightly.')
-        npmjs=exe.parent/'node_modules/npm/bin/npm-cli.js'
-        if not npmjs.is_file():raise OperationError('Node nightly did not include npm. No guessed npm bootstrap was run.')
-        self.env['PATH']=str(exe.parent)+os.pathsep+self.env.get('PATH','')
-        self.activate('node',version,[exe],source)
-        nr=self.require(self.run_command([exe,npmjs,'--version'],timeout=40,label='Test bundled npm'),'Bundled npm')
-        npm_lines=[clean for line in nr.out.splitlines() if (clean:=ANSI.sub('',line).strip())]
+        checked=self.require(self.run_command([exe,'--version'],timeout=40,label='Test exact official Node '+version),'Node executable')
+        if not version_matches(checked.out,version):raise OperationError('Downloaded Node version does not match the requested archive.')
+        return exe
+
+    @staticmethod
+    def npm_version_output(output:str) -> tuple[str,list[str]]:
+        npm_lines=[clean for line in output.splitlines() if (clean:=ANSI.sub('',line).strip())]
         npm_versions=[line for line in npm_lines if line[0].isdigit() and SEMVER.fullmatch(line)]
         if len(npm_versions)!=1:raise OperationError('Bundled npm did not return one unambiguous version line. Its diagnostic output was not stored as a version.')
         npm_version=npm_versions[0]
         npm_diagnostics=[line for line in npm_lines if line!=npm_version]
-        self.active['npm']={'version':npm_version,'command':[str(exe),str(npmjs)],'source':'Bundled with official Node nightly','diagnostics':npm_diagnostics}
+        return npm_version,npm_diagnostics
+
+    def step_node(self):
+        source='https://nodejs.org/download/nightly/index.json'
+        arch=getattr(self,'arch',None) or architecture()
+        candidates=[x for x in self.get_json(source) if 'win-'+arch+'-zip' in x.get('files',[]) and SEMVER.fullmatch(str(x.get('version',''))) and 'nightly' in x['version']]
+        if not candidates:raise OperationError('No official Node nightly ZIP is published for this architecture. No stable tool-runtime fallback attempted.')
+        version=max(candidates,key=lambda x:semver_key(x['version']))['version']
+        self.current_result.update(expected=version,source=source)
+        exe=self.node_archive(version,arch,nightly=True)
+        npm_meta=self.npm_meta('npm');npm_version=choose_npm(npm_meta)
+        engines=npm_meta['versions'][npm_version].get('engines',{}).get('node')
+        if not isinstance(engines,str) or not engines:raise OperationError('Newest npm has no declared Node engine range; previous managed pair preserved.')
+        stable=[x['version'] for x in self.get_json('https://nodejs.org/dist/index.json') if 'win-'+arch+'-zip' in x.get('files',[]) and SEMVER.fullmatch(str(x.get('version',''))) and SEMVER.fullmatch(x['version'])[4] is None]
+        choice_file=self.run_dir/'npm-node-candidates.json'
+        atomic_json(choice_file,{'engines':engines,'nightly':version,'hosts':stable})
+        semver=exe.parent/'node_modules/npm/node_modules/semver'
+        if not (semver/'index.js').is_file():raise OperationError('Official bundled npm semver evaluator missing; compatibility was not guessed.')
+        code="const fs=require('fs'),s=require(process.argv[1]),d=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));if(!s.validRange(d.engines))throw Error('Invalid npm engine range');const acceptsNightly=s.satisfies(d.nightly,d.engines);const hosts=d.hosts.filter(v=>s.satisfies(v,d.engines)).sort(s.rcompare);console.log(JSON.stringify({host:acceptsNightly?d.nightly:hosts[0],nightly_accepted:acceptsNightly}));"
+        result=self.require(self.run_command([exe,'-e',code,semver,choice_file],timeout=40,label='Evaluate newest npm declared engines with official npm semver'),'npm compatibility preflight')
+        try:choice=json.loads(result.out)
+        except ValueError as exc:raise OperationError('npm compatibility preflight returned invalid JSON; previous pair preserved.') from exc
+        if not isinstance(choice,dict) or type(choice.get('nightly_accepted')) is not bool:raise OperationError('npm compatibility preflight returned an unexpected shape; previous pair preserved.')
+        host_version=choice.get('host')
+        if host_version not in ([version] if choice.get('nightly_accepted') else stable):raise OperationError('No published compatible npm Node host; previous pair preserved.')
+        host=exe if choice.get('nightly_accepted') else self.node_archive(host_version,arch,nightly=False)
+        bootstrap=host.parent/'node_modules/npm/bin/npm-cli.js'
+        env={**self.env,'PATH':str(host.parent)+os.pathsep+self.env.get('PATH','')}
+        boot=self.require(self.run_command([host,bootstrap,'--version'],env=env,timeout=40,label='Verify compatible npm bootstrap host'),'npm bootstrap')
+        _,warnings=self.npm_version_output(boot.out)
+        if warnings:raise OperationError('The npm bootstrap host emitted diagnostics; package manager was not replaced.')
+        directory=self.root/'runtimes/npm'/npm_version;assert_regular_path(directory)
+        marker=directory/'.workbench-owned.json';npmjs=directory/'node_modules/npm/bin/npm-cli.js'
+        if not (marker.is_file() and npmjs.is_file()):
+            if directory.exists():raise OperationError('Incomplete/unowned npm destination preserved for review.')
+            directory.mkdir(parents=True)
+            if self.cancel.is_set():raise StopRun('Stopped before private npm installation.')
+            self.require(self.run_command([host,bootstrap,'install','--prefix',directory,'npm@'+npm_version,'--registry','https://registry.npmjs.org','--ignore-scripts','--no-fund','--no-audit'],env=env,timeout=600,label='Install exact newest official npm into private prefix'),'Private npm installation')
+            info=json.loads((directory/'node_modules/npm/package.json').read_text(encoding='utf-8'))
+            if info.get('name')!='npm' or info.get('version')!=npm_version or info.get('engines',{}).get('node')!=engines:raise OperationError('Installed npm identity/engine metadata differs from preflight.')
+            atomic_json(marker,{'owned_by':SCHEMA,'version':npm_version})
+        nr=self.require(self.run_command([host,npmjs,'--version'],env=env,timeout=40,label='Verify newest npm on declared compatible host without warnings'),'Compatible npm execution')
+        actual,diagnostics=self.npm_version_output(nr.out)
+        if actual!=npm_version or diagnostics:raise OperationError('Newest npm version or warning-free compatibility verification failed; previous pair preserved.')
+        if self.cancel.is_set():raise StopRun('Stopped before activating verified Node/npm pair.')
+        self.active['node']={'version':version,'command':[str(exe)],'source':source}
+        self.active['npm']={'version':npm_version,'command':[str(host),str(npmjs)],'source':'https://registry.npmjs.org/npm','host_version':host_version,'engines':engines,'diagnostics':[]}
+        self.env['PATH']=str(exe.parent)+os.pathsep+self.env.get('PATH','')
         self.save_state()
-        self.current_result['detail']='Nightly archive checksum and actual Node/npm execution verified.'
-        if npm_diagnostics:
-            self.current_result['npm_diagnostics']=npm_diagnostics
-            self.current_result['status']='REVIEW_NEEDED'
-            self.current_result['detail']+=' npm emitted diagnostics; successful execution does not establish declared engine compatibility.'
-            for diagnostic in npm_diagnostics:self.log(diagnostic,'warning')
+        self.current_result.update(actual=version,npm_version=npm_version,npm_host_version=host_version,npm_engines=engines,nightly_accepted_by_npm=choice['nightly_accepted'],detail=f'Node {version} retained for nightly tools. npm {npm_version} runs on its declared compatible private host {host_version}; actual execution produced no diagnostics. The separate package-manager host does not replace the nightly tool runtime.')
+
+    def npm_environment(self) -> dict:
+        command=self.npm_command()
+        return {**self.env,'PATH':str(Path(command[1]).parents[2]/'.bin')+os.pathsep+str(Path(command[0]).parent)+os.pathsep+self.env.get('PATH','')}
 
     def npm_command(self) -> list[str]:
         command=self.active.get('npm',{}).get('command')
@@ -1010,7 +1056,7 @@ class Workbench:
         if not (marker.is_file() and entry.is_file()):
             self.require(self.run_command([*self.npm_command(),'install','--global','--prefix',directory,
                 '@openai/codex@'+version,'--registry','https://registry.npmjs.org','--no-fund','--no-audit'],
-                timeout=1200,label='Install exact official Codex '+version),'Codex package installation')
+                env=self.npm_environment(),timeout=1200,label='Install exact official Codex '+version),'Codex package installation')
             atomic_json(marker,{'owned_by':SCHEMA,'version':version})
         if not entry.is_file():raise OperationError('Official Codex npm entry point missing after installation.')
         cmd=[self.active['node']['command'][0],str(entry)]
@@ -1176,7 +1222,7 @@ class Workbench:
             try:
                 v=choose_npm(self.npm_meta(name))
                 r=self.run_command([*self.npm_command(),'install','--prefix',base,'--save-exact',name+'@'+v,
-                    '--registry','https://registry.npmjs.org','--no-fund','--no-audit'],timeout=1200,label='Install exact JavaScript build '+name+'@'+v)
+                    '--registry','https://registry.npmjs.org','--no-fund','--no-audit'],env=self.npm_environment(),timeout=1200,label='Install exact JavaScript build '+name+'@'+v)
                 self.require(r,'JavaScript package '+name)
                 info=json.loads((base/'node_modules'/name/'package.json').read_text(encoding='utf-8'))
                 if info.get('version')!=v:raise OperationError('Package version mismatch')
@@ -1278,9 +1324,7 @@ class Workbench:
     def step_dotnet(self):
         # Optional task-specific SDK. The endpoint chooses the newest preview channel at run time.
         index=self.get_json('https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json')
-        channels=[x for x in index['releases-index'] if x.get('support-phase')=='preview']
-        if not channels:raise OperationError('No advertised .NET preview channel found. No stable SDK substituted.')
-        channel=max(channels,key=lambda x:tuple(map(int,x['channel-version'].split('.'))))['channel-version']
+        channel=choose_dotnet_channel(index)
         script=self.root/'downloads/dotnet-install.ps1'
         self.fetch('https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.ps1',script,max_bytes=4*1024**2)
         sig=self.ps("$s=Get-AuthenticodeSignature -LiteralPath "+ps_literal(script)+"; [pscustomobject]@{Status=$s.Status.ToString();Subject=if($s.SignerCertificate){$s.SignerCertificate.Subject}else{''}} | ConvertTo-Json -Compress",label='Verify Microsoft SDK installer signature')
@@ -1382,7 +1426,7 @@ class Workbench:
 
     def step_cleanup(self):
         removed=[];retained=[]
-        for family in ('node','codex','openai-cli'):
+        for family in ('node','npm-host','npm','codex','openai-cli'):
             parent=self.root/'runtimes'/family
             assert_regular_path(parent)
             if not parent.is_dir():continue
@@ -1423,7 +1467,7 @@ class Workbench:
         self.activate_candidates()
         bin_dir=self.root/'bin';bin_dir.mkdir(parents=True,exist_ok=True)
         def bat_path(text):return str(text).replace('%','%%')
-        aliases={'codex':['codex','codex-edge'],'openai-api':['openai-api'],'python':['python-edge'],'node':['node-edge'],'npm':['npm-edge'],'dotnet':['dotnet-edge']}
+        aliases={'codex':['codex','codex-edge'],'openai-api':['openai-api'],'python':['python-edge'],'node':['node-edge'],'npm':['npm','npm-edge'],'dotnet':['dotnet-edge']}
         for name,names in aliases.items():
             if not self.active.get(name):continue
             command=self.active[name]['command']
@@ -1431,6 +1475,11 @@ class Workbench:
                 line=' '.join('"'+bat_path(x)+'"' for x in command)
                 text='@echo off\r\nchcp 65001 >nul\r\n'+line+' %*\r\nexit /b %errorlevel%\r\n'
                 (bin_dir/(alias+'.cmd')).write_bytes(text.encode('utf-8'))
+        if self.active.get('npm'):
+            host,cli=self.active['npm']['command'][:2]
+            npx=Path(cli).with_name('npx-cli.js')
+            if npx.is_file():
+                (bin_dir/'npx.cmd').write_bytes(('@echo off\r\n"'+bat_path(host)+'" "'+bat_path(npx)+'" %*\r\nexit /b %errorlevel%\r\n').encode('utf-8'))
         path_parts=[str(bin_dir)]
         for name in ('python','node'):
             if self.active.get(name):path_parts.append(str(Path(self.active[name]['command'][0]).parent))
