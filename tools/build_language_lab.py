@@ -167,8 +167,9 @@ def attribute_text(catalog):
            '# Every .fixture is original reference text, not a validated program.',
            '# These overrides are restricted to numeric fixtures in this folder.',
            '# Generated metadata intentionally participates in the experiment; see README.md.',
+           '.gitattributes text eol=lf',
            'index.html linguist-generated=true',
-           'atlas.svg linguist-generated=true',
+           'atlas.svg text eol=lf linguist-generated=true',
            'catalog.json linguist-generated=true',
            'README.md linguist-generated=true linguist-documentation=true']
     for row in catalog['languages']:

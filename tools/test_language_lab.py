@@ -60,6 +60,8 @@ class LanguageLabTests(unittest.TestCase):
             self.assertIn('linguist-detectable=true',line)
             self.assertIn('linguist-generated=false',line)
         self.assertIn('index.html linguist-generated=true\n',attributes)
+        self.assertIn('.gitattributes text eol=lf\n',attributes)
+        self.assertIn('atlas.svg text eol=lf linguist-generated=true\n',attributes)
         self.assertIn('README.md linguist-generated=true linguist-documentation=true\n',attributes)
         self.assertNotIn('source/',attributes)
 
