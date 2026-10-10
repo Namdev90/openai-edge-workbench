@@ -48,3 +48,5 @@ Application regression tests and 22 setup/security tests cover Windows PowerShel
 [Detailed scope](source/README.md) Â· [Verification record](source/VERIFICATION.md) Â· [Official publisher references](source/SOURCES.md).
 
 See [FEATURES.md](FEATURES.md) for the exact legacy feature reconciliation and [ALTERNATIVES.md](ALTERNATIVES.md) for researched alternatives.
+
+Version 2.0.4 keeps structured Codex doctor warnings/failures visible, including their individual details and remediation. Successful installation or doctor process exit does not hide degraded optional MCP configuration, security observations or history-index warnings. Security exclusions and history databases are not modified automatically.

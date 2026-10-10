@@ -1,14 +1,14 @@
 # Verification record
 
-Build: OpenAI Edge Workbench 2.0.3-preview.1, 10 October 2026.
+Build: OpenAI Edge Workbench 2.0.4-preview.1, 10 October 2026.
 
 ## Application checks
 
-112 regression tests pass locally on Windows. Coverage includes interpreter selection with a full selected-pack wheel solution, explicit resolution rejection versus transport errors, hashed package locks, pack imports and version matching, candidate preservation, exact-channel timeout retries, WebView2 registry verification, catalog mismatches, native PowerShell JSON under a foreign module search path, safe original PATH backups, npm version/warning separation, and concurrent HTTP report reads while reports are replaced. Signed local Terminal recovery and exact per-user Canary side-by-side installation have dedicated failure and cancellation checks.
+116 regression tests pass locally on Windows. Coverage includes interpreter selection with a full selected-pack wheel solution, explicit resolution rejection versus transport errors, hashed package locks, pack imports and version matching, candidate preservation, exact-channel timeout retries, WebView2 registry verification, catalog mismatches, native PowerShell JSON under a foreign module search path, safe original PATH backups, npm version/warning separation, and concurrent HTTP report reads while reports are replaced. Signed local Terminal recovery and exact per-user Canary side-by-side installation have dedicated failure and cancellation checks.
 
 Existing coverage also checks architecture/release selection, secret redaction, archive traversal, Windows junctions, configuration conflict preservation, ownership-limited cleanup, process exit evidence, local capability/origin/Host checks, simulation labeling, and rejection of a second worker. Astra independently reviewed the earlier 2.0.2 repair. The 2.0.3 npm and .NET changes were additionally checked through regression tests and actual isolated runtime/package operations.
 
-The JavaScript parser check passes. The release build regenerates every embedded source byte and its SHA-256 manifest. CI runs application and payload tests on Windows and Linux; Windows additionally runs the 22 setup/security tests under Windows PowerShell 5.1 and PowerShell 7 plus real CMD extraction and NoLaunch bootstrap.
+The JavaScript parser check passes. The release build regenerates every embedded source byte and its SHA-256 manifest. CI runs application and payload tests on Windows and Linux; Windows additionally runs the 23 setup/security tests under Windows PowerShell 5.1 and PowerShell 7 plus real CMD extraction and NoLaunch bootstrap.
 
 ## Real resolver and installation evidence
 
@@ -33,3 +33,5 @@ Package catalog availability and network failures remain visible. The utility do
 ## Earlier builds
 
 The initial 2.0.0 build had 42 offline tests and a simulated browser fixture. The standalone 2.0.1-preview.1 review had 48 application tests and 12 setup/security tests, plus verified download/extraction/NoLaunch paths. Those earlier checks did not by themselves establish a complete laptop installation. This repair was driven by the subsequent real diagnostic.
+
+Version 2.0.4 discovers doctor --json support and preserves each non-ok check, warning/failure counts, details and remediation in the report rather than a truncated text tail. Regression checks cover warning retention, failure classification, malformed output and secret redaction.

@@ -31,7 +31,7 @@ import urllib.request
 import uuid
 import zipfile
 
-VERSION = '2.0.3-preview.1'
+VERSION = '2.0.4-preview.1'
 SCHEMA = 'openai-edge-workbench/2'
 ROOT_NAME = 'OpenAI-Edge-Workbench'
 DOCS_MCP = 'https://developers.openai.com/mcp'
@@ -271,6 +271,31 @@ def merge_missing(source: Path, target: Path) -> dict:
             dest.parent.mkdir(parents=True,exist_ok=True)
             shutil.copy2(src,dest); result['copied'].append(rel.as_posix())
     return result
+
+
+def summarize_codex_doctor(output: str) -> dict:
+    """Keep advertised structured warnings visible without interpreting them as repairs."""
+    try:
+        data=json.loads(output)
+        if not isinstance(data,dict) or not isinstance(data.get('checks'),dict):raise ValueError('Unsupported doctor schema')
+        rows=[];counts=collections.Counter()
+        for key,row in data['checks'].items():
+            if not isinstance(row,dict) or not isinstance(row.get('status'),str):raise ValueError('Malformed doctor check')
+            status=row['status'];counts[status]+=1
+            if status!='ok':
+                safe={name:row[name] for name in ('category','summary','details','remediation','issues') if name in row}
+                def protect(value):
+                    if isinstance(value,str):return redact(value)
+                    if isinstance(value,dict):return {name:protect(item) for name,item in value.items()}
+                    if isinstance(value,list):return [protect(item) for item in value]
+                    return value
+                safe=protect(safe)
+                rows.append({'id':str(key),'status':status,**safe})
+        return {'overall_status':data.get('overallStatus','unknown'),'counts':dict(counts),'non_ok_checks':rows,
+                'warning_count':counts['warning'],'failure_count':counts['failure']+counts['failed']+counts['error'],
+                'scope':'Doctor observations only; no security exclusions, credential changes or history repairs applied.'}
+    except (ValueError,TypeError) as exc:
+        raise OperationError('Advertised Codex doctor JSON was not valid; diagnostics remain unverified.') from exc
 
 
 def default_options() -> dict:
@@ -1361,8 +1386,17 @@ class Workbench:
                                      'same_account_across_apps':'NOT_VERIFIED'}
             help_result=self.run_command([*cmd,'--help'],quiet=True,timeout=60,label='Discover diagnostic commands supported by installed Codex')
             if re.search(r'(?m)^\s+doctor(?:\s|$)',help_result.out):
-                doctor=self.run_command([*cmd,'doctor'],quiet=True,timeout=180,label='Run advertised Codex doctor diagnostics')
-                checks['codex_doctor']={'exit_code':doctor.code,'output_tail':redact(doctor.out[-2500:])}
+                doctor_help=self.run_command([*cmd,'doctor','--help'],quiet=True,timeout=60,label='Discover advertised structured doctor output')
+                if doctor_help.code==0 and '--json' in doctor_help.out:
+                    doctor=self.run_command([*cmd,'doctor','--json'],quiet=True,timeout=180,label='Run advertised structured Codex doctor diagnostics')
+                    try:summary=summarize_codex_doctor(doctor.out)
+                    except OperationError as exc:summary={'state':'UNVERIFIED','detail':str(exc)}
+                    checks['codex_doctor']={'exit_code':doctor.code,**summary}
+                    if summary.get('warning_count') or summary.get('failure_count'):
+                        self.log(f"Codex doctor: {summary.get('warning_count',0)} warning checks and {summary.get('failure_count',0)} failure checks; see structured report. No automatic security/history edits.",'warning')
+                else:
+                    doctor=self.run_command([*cmd,'doctor'],quiet=True,timeout=180,label='Run advertised Codex doctor diagnostics')
+                    checks['codex_doctor']={'exit_code':doctor.code,'structured_output':'Not advertised','output_tail':redact(doctor.out[-2500:])}
             else:checks['codex_doctor']={'state':'Not advertised by this build; no guessed diagnostic command executed.'}
         gh=self.find('gh.exe')
         if gh:
