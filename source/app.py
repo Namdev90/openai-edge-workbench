@@ -1,6 +1,6 @@
 """Capability-protected loopback GUI. No remote control or arbitrary command API."""
 from __future__ import annotations
-import argparse, contextlib, hmac, http.server, json, os, secrets, sys, threading, time
+import argparse, contextlib, hmac, http.server, json, os, secrets, socket, sys, threading, time
 import urllib.parse, urllib.request, webbrowser
 from pathlib import Path
 from engine import Workbench, ROOT_NAME, atomic_json, assert_regular_path
@@ -21,7 +21,7 @@ def make_server(workbench:Workbench,token:str|None=None):
     class Handler(http.server.BaseHTTPRequestHandler):
         server_version='EdgeWorkbench'
         def log_message(self,*args):pass  # Never log capability tokens or personal URLs.
-        def response(self,status,data,content_type='application/json; charset=utf-8'):
+        def response(self,status,data,content_type='application/json; charset=utf-8',*,close=False):
             if not isinstance(data,bytes):data=json.dumps(data).encode('utf-8')
             self.send_response(status)
             self.send_header('Content-Type',content_type)
@@ -31,16 +31,63 @@ def make_server(workbench:Workbench,token:str|None=None):
             self.send_header('Referrer-Policy','no-referrer')
             self.send_header('X-Frame-Options','DENY')
             self.send_header('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+            if close:self.send_header('Connection','close')
             self.end_headers()
             with contextlib.suppress(BrokenPipeError,ConnectionResetError):self.wfile.write(data)
+        def body_length(self):
+            # Conflicting framing is never guessed, including a lone chunked
+            # header or duplicate Content-Length fields with identical values.
+            if self.headers.get_all('Transfer-Encoding'):
+                raise ValueError('Transfer-Encoding is unsupported.')
+            lengths=self.headers.get_all('Content-Length',[])
+            if not lengths:return 0
+            if len(lengths)!=1:raise ValueError('One Content-Length header required.')
+            value=lengths[0].strip()
+            if not value or len(value)>4 or not value.isascii() or not value.isdecimal():
+                raise ValueError('Invalid Content-Length.')
+            length=int(value)
+            if length>8192:raise ValueError('Request too large.')
+            return length
+        def discard_rejected_body(self):
+            # Discard only bounded, unambiguously framed raw bytes after rejection.
+            # These bytes are never decoded or logged.
+            try:length=self.body_length()
+            except ValueError:return
+            if not length:return
+            deadline=time.monotonic()+.25
+            previous_timeout=self.connection.gettimeout()
+            try:
+                while length:
+                    remaining=deadline-time.monotonic()
+                    if remaining<=0:break
+                    self.connection.settimeout(remaining)
+                    # read(length) can wait indefinitely for a slow drip despite
+                    # per-read socket timeouts. read1 performs one bounded read.
+                    chunk=self.rfile.read1(min(length,4096))
+                    if not chunk:break
+                    length-=len(chunk)
+            except (OSError,ValueError):
+                pass
+            finally:
+                with contextlib.suppress(OSError):self.connection.settimeout(previous_timeout)
+        def reject(self,status,error,*,drain=True):
+            self.close_connection=True
+            if drain:self.discard_rejected_body()
+            # Windows can reset a connection closed with an unread POST body.
+            # Send the complete denial first, then signal the end of the reply.
+            with contextlib.suppress(OSError):
+                self.response(status,{'error':error},close=True)
+                self.wfile.flush()
+            with contextlib.suppress(OSError):self.connection.shutdown(socket.SHUT_WR)
+            return False
         def allowed(self,*,api=False,write=False):
             expected=f'127.0.0.1:{self.server.server_address[1]}'
             if self.headers.get('Host')!=expected:
-                self.response(403,{'error':'Unexpected Host header.'});return False
+                return self.reject(403,'Unexpected Host header.')
             if api and not hmac.compare_digest(self.headers.get('X-Workbench-Token',''),capability):
-                self.response(403,{'error':'Open the dashboard from its launcher.'});return False
+                return self.reject(403,'Open the dashboard from its launcher.')
             if write and self.headers.get('Origin')!='http://'+expected:
-                self.response(403,{'error':'Same-origin request required.'});return False
+                return self.reject(403,'Same-origin request required.')
             return True
         def do_GET(self):
             path=urllib.parse.urlsplit(self.path).path
@@ -86,10 +133,11 @@ def make_server(workbench:Workbench,token:str|None=None):
         def do_POST(self):
             if not self.allowed(api=True,write=True):return
             if self.headers.get('Content-Type','').split(';')[0]!='application/json':
-                self.response(415,{'error':'JSON required.'});return
+                self.reject(415,'JSON required.');return
             try:
-                length=int(self.headers.get('Content-Length','0'))
-                if length<0 or length>8192:raise ValueError('Request too large.')
+                length=self.body_length()
+            except ValueError as exc:self.reject(400,str(exc));return
+            try:
                 body=json.loads(self.rfile.read(length) or b'{}')
                 if not isinstance(body,dict):raise ValueError('Object required.')
             except (ValueError,UnicodeDecodeError) as exc:self.response(400,{'error':str(exc)});return

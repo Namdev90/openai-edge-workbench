@@ -118,9 +118,11 @@ try {
     $msg = $msg.Replace($env:USERPROFILE,'[USER]')
     Status ('BOOTSTRAP FAILED: ' + $msg)
     Write-Host "Diagnostic file: $Diagnostic" -ForegroundColor Yellow
-    try {
-        Add-Type -AssemblyName System.Windows.Forms
-        [System.Windows.Forms.MessageBox]::Show("$msg`n`nDiagnostic: $Diagnostic", 'OpenAI Edge Workbench - bootstrap issue', 'OK', 'Error') | Out-Null
-    } catch { }
+    if (-not $NoLaunch) {
+        try {
+            Add-Type -AssemblyName System.Windows.Forms
+            [System.Windows.Forms.MessageBox]::Show("$msg`n`nDiagnostic: $Diagnostic", 'OpenAI Edge Workbench - bootstrap issue', 'OK', 'Error') | Out-Null
+        } catch { }
+    }
     exit 1
 }

@@ -1,4 +1,4 @@
-# Namu AI Workbench 3.0.0-preview.1
+# Namu AI Workbench 3.0.0-preview.2
 
 Independent, unsigned Windows maintenance utility generated for Namu. It is not an OpenAI product.
 
@@ -20,7 +20,9 @@ Completed installer network timeouts (`0x80072EE2`) receive bounded retries of t
 
 If Windows Terminal Preview streaming still times out, the exact official release bundle can be downloaded locally, SHA-256 and Microsoft signature checked, and installed with normal AppX dependency/signature validation. Canary is verified through its `Chrome SxS` executable rather than WinGet's regular-Chrome correlation. A signed, hash-verified official Canary installer uses the publisher's side-by-side switches; the regular browser and its profiles are retained.
 
-## Default scope
+## Direct CMD default scope
+
+The recommended `Run.ps1` setup selects every tool pack, including .NET, while keeping the live model test off. The embedded CMD launched directly uses the defaults below; the dashboard lets you review or change either selection before installation.
 
 Always: current ChatGPT desktop Store ID `9PLM9XGG6VKS`, Git, GitHub CLI, uv, PowerShell Preview, VS Code Insiders, Windows Terminal Preview, WebView2, Node nightly, newest npm on a separately compatible private Node host, official Codex CLI, official OpenAI API CLI when a verifiable Windows release asset exists, isolated Python and JavaScript OpenAI SDKs, OpenAI/Python/Jupyter preview editor extensions.
 

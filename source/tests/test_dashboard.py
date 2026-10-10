@@ -1,6 +1,7 @@
-import http.client,json,tempfile,threading,time,unittest
+import http.client,json,socket,tempfile,threading,time,unittest
 from pathlib import Path
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import Mock,patch
 import app
 import engine
 
@@ -24,6 +25,22 @@ class DashboardTests(unittest.TestCase):
         if host:headers['Host']=host
         conn.request(method,path,body=json.dumps(body) if body is not None else None,headers=headers)
         r=conn.getresponse();data=r.read();status=r.status;conn.close();return status,data
+    def raw_post(self,headers,body=b''):
+        conn=http.client.HTTPConnection('127.0.0.1',self.port,timeout=3)
+        try:
+            conn.putrequest('POST','/api/start',skip_host=True,skip_accept_encoding=True)
+            for name,value in headers:conn.putheader(name,value)
+            conn.endheaders(body)
+            response=conn.getresponse()
+            return response.status,response.read(),response.getheader('Connection')
+        finally:conn.close()
+    def framing_handler(self,headers):
+        handler=object.__new__(self.server.RequestHandlerClass)
+        handler.headers=http.client.HTTPMessage()
+        for name,value in headers:handler.headers.add_header(name,value)
+        handler.connection=Mock();handler.connection.gettimeout.return_value=None
+        handler.rfile=Mock();handler.rfile.read1.return_value=b''
+        return handler
     def test_status_requires_capability(self):self.assertEqual(self.request('GET','/api/status',token=False)[0],403)
     def test_authorized_status(self):
         status,data=self.request('GET','/api/status')
@@ -32,6 +49,94 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(self.request('POST','/api/start',{},origin='https://other.example')[0],403)
         self.assertFalse(self.w.started)
     def test_missing_origin_write_rejected(self):self.assertEqual(self.request('POST','/api/start',{})[0],403)
+    def test_repeated_denied_post_bodies_deliver_complete_403_without_decoding(self):
+        raw=b'{"private-body-marker":\xffinvalid-json'
+        host=f'127.0.0.1:{self.port}'
+        common=[('Content-Type','application/json'),('Content-Length',str(len(raw)))]
+        denials=[
+            [('Host',host),('X-Workbench-Token','test-capability')],
+            [('Host',host),('X-Workbench-Token','wrong-capability'),('Origin',self.origin)],
+            [('Host','evil.example'),('X-Workbench-Token','test-capability'),('Origin',self.origin)],
+        ]
+        with patch.object(app.json,'loads',side_effect=AssertionError('Unauthorized body must never be decoded.')) as decode:
+            for headers in denials:
+                for attempt in range(50):
+                    with self.subTest(headers=headers,attempt=attempt):
+                        status,data,connection=self.raw_post(headers+common,raw)
+                        self.assertEqual(status,403)
+                        self.assertIn(b'"error"',data)
+                        self.assertNotIn(b'private-body-marker',data)
+                        self.assertEqual(connection,'close')
+            decode.assert_not_called()
+        self.assertFalse(self.w.started)
+        self.assertEqual(self.request('GET','/api/status')[0],200)
+    def test_denial_with_stalled_partial_body_has_a_bounded_deadline(self):
+        headers=[('Host',f'127.0.0.1:{self.port}'),('Content-Type','application/json'),
+                 ('Content-Length','8192'),('Origin',self.origin)]
+        started=time.monotonic()
+        status,data,connection=self.raw_post(headers,b'{')
+        self.assertLess(time.monotonic()-started,1.5)
+        self.assertEqual(status,403);self.assertIn(b'Open the dashboard',data)
+        self.assertEqual(connection,'close');self.assertFalse(self.w.started)
+    def test_ambiguous_or_unsafe_framing_is_never_drained_or_decoded(self):
+        invalid=[
+            [('Content-Length','2'),('Content-Length','2')],
+            [('Content-Length','2'),('Content-Length','3')],
+            [('Content-Length','-2')],[('Content-Length','+2')],
+            [('Content-Length','2, 2')],[('Content-Length','')],
+            [('Content-Length','8193')],[('Content-Length','0'*5000)],
+            [('Content-Length','\u0662')],[('Transfer-Encoding','chunked')],
+            [('Transfer-Encoding',''),('Content-Length','2')],
+        ]
+        for headers in invalid:
+            with self.subTest(headers=headers):
+                handler=self.framing_handler(headers)
+                with self.assertRaises(ValueError):handler.body_length()
+                handler.discard_rejected_body()
+                handler.rfile.read1.assert_not_called()
+                handler.connection.settimeout.assert_not_called()
+    def test_invalid_framing_preserves_authentication_order_and_closes_connection(self):
+        base=[('Host',f'127.0.0.1:{self.port}'),('Content-Type','application/json'),('Origin',self.origin)]
+        invalid=[
+            [('Content-Length','2'),('Content-Length','2')],
+            [('Content-Length','-2')],[('Content-Length','2, 2')],
+            [('Content-Length','8193')],[('Content-Length','0'*5000)],
+            [('Transfer-Encoding','chunked'),('Content-Length','2')],
+        ]
+        with patch.object(app.json,'loads',side_effect=AssertionError('Invalid framing must never be decoded.')) as decode:
+            for headers in invalid:
+                for authorized in (False,True):
+                    with self.subTest(headers=headers,authorized=authorized):
+                        authentication=[('X-Workbench-Token','test-capability')] if authorized else []
+                        status,data,connection=self.raw_post(base+authentication+headers)
+                        self.assertEqual(status,400 if authorized else 403)
+                        self.assertIn(b'"error"',data);self.assertEqual(connection,'close')
+            decode.assert_not_called()
+        self.assertFalse(self.w.started)
+    def test_denial_drain_uses_one_overall_deadline_for_slow_drips(self):
+        handler=self.framing_handler([('Content-Length','5000')])
+        handler.connection.gettimeout.return_value=7
+        handler.rfile.read1.return_value=b'x'
+        clock=Mock(side_effect=[10,10,10.1,10.2,10.3])
+        with patch.object(app,'time',SimpleNamespace(monotonic=clock)):
+            handler.discard_rejected_body()
+        self.assertEqual(handler.rfile.read1.call_count,3)
+        self.assertTrue(all(call.args[0]<=4096 for call in handler.rfile.read1.call_args_list))
+        timeouts=[call.args[0] for call in handler.connection.settimeout.call_args_list]
+        self.assertEqual(timeouts[-1],7)
+        self.assertAlmostEqual(timeouts[0],.25)
+        self.assertAlmostEqual(timeouts[1],.15)
+        self.assertAlmostEqual(timeouts[2],.05)
+    def test_rejected_non_json_body_is_discarded_without_decoding(self):
+        raw=b'<private-body-marker>'
+        headers=[('Host',f'127.0.0.1:{self.port}'),('X-Workbench-Token','test-capability'),
+                 ('Origin',self.origin),('Content-Type','text/plain'),('Content-Length',str(len(raw)))]
+        with patch.object(app.json,'loads',side_effect=AssertionError('Non-JSON body must never be decoded.')) as decode:
+            status,data,connection=self.raw_post(headers,raw)
+            decode.assert_not_called()
+        self.assertEqual(status,415);self.assertIn(b'JSON required',data)
+        self.assertNotIn(b'private-body-marker',data);self.assertEqual(connection,'close')
+        self.assertFalse(self.w.started)
     def test_bad_host_rejected(self):self.assertEqual(self.request('GET','/',host='evil.example')[0],403)
     def test_arbitrary_action_rejected(self):self.assertEqual(self.request('POST','/api/execute',{'command':'calc'},origin=self.origin)[0],404)
     def test_static_source_not_exposed(self):self.assertEqual(self.request('GET','/engine.py')[0],404)
