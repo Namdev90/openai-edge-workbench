@@ -1,0 +1,7 @@
+OPENAI EDGE WORKBENCH
+
+One-click Windows GUI: download OpenAI-Edge-Workbench.cmd and double-click.
+Or use Setup.ps1 to download, SHA256-check and run the published launcher.
+Source: source/
+Historic apps: legacy/ (do not run).
+Reports: %LOCALAPPDATA%\OpenAI-Edge-Workbench\reports\<run-id>\Paste-Into-ChatGPT.txt
