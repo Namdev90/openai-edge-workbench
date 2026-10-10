@@ -8,7 +8,7 @@ Build: OpenAI Edge Workbench 2.0.2-preview.1, 10 October 2026.
 
 Existing coverage also checks architecture/release selection, secret redaction, archive traversal, Windows junctions, configuration conflict preservation, ownership-limited cleanup, process exit evidence, local capability/origin/Host checks, simulation labeling, and rejection of a second worker. An independent Astra review ran the suite and checked the fixes.
 
-The JavaScript parser check passes. The release build regenerates every embedded source byte and its SHA-256 manifest. CI runs application and payload tests on Windows and Linux; Windows additionally runs the 12 setup/security tests under Windows PowerShell 5.1 and PowerShell 7 plus real CMD extraction and NoLaunch bootstrap.
+The JavaScript parser check passes. The release build regenerates every embedded source byte and its SHA-256 manifest. CI runs application and payload tests on Windows and Linux; Windows additionally runs the 22 setup/security tests under Windows PowerShell 5.1 and PowerShell 7 plus real CMD extraction and NoLaunch bootstrap.
 
 ## Real resolver and installation evidence
 

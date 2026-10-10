@@ -30,7 +30,7 @@ The report records selected/observed versions, exits, failures, model checks and
 
 [source/](source/) contains every embedded application file. [release.json](release.json) and [tools/verify_payload.py](tools/verify_payload.py) verify exact byte correspondence, including tests. No source-byte exception is used. [tools/build_release.py](tools/build_release.py) rebuilds the deterministic launcher after edits.
 
-Application regression tests and 12 setup/security tests cover Windows PowerShell 5.1 and PowerShell 7. The actual CMD extraction and bootstrap are exercised in NoLaunch mode, and CI repeats application/distribution checks on Windows and Linux. [The verification record](source/VERIFICATION.md) separates offline checks, the supplied installation report, and targeted laptop repair results. It does not certify every desktop feature or cloud plugin.
+Application regression tests and 22 setup/security tests cover Windows PowerShell 5.1 and PowerShell 7. The actual CMD extraction and bootstrap are exercised in NoLaunch mode, and CI repeats application/distribution checks on Windows and Linux. [The verification record](source/VERIFICATION.md) separates offline checks, the supplied installation report, and targeted laptop repair results. It does not certify every desktop feature or cloud plugin.
 
 [MIGRATION.md](MIGRATION.md) and [migration-audit.json](migration-audit.json) document exact historical archives, branch cleanup conditions and verification. Historical files in legacy/ are inert references and are not executed by the active setup.
 

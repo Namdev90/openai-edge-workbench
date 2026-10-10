@@ -16,6 +16,27 @@ try{
  Throws {Get-SetupDownload '../file.ps1' ('a'*40) (Join-Path $tmp 'download')} 'unsafe download path rejected'
  Write-SetupFile (Join-Path $tmp 'atomic') 'first';Write-SetupFile (Join-Path $tmp 'atomic') 'second'
  Assert ((Get-Content (Join-Path $tmp 'atomic') -Raw) -eq 'second') 'atomic replacement supported'
+ $private=Join-Path $tmp 'existing-private';[void](New-Item -ItemType Directory -Path $private)
+ $beforeAcl=Get-Acl -LiteralPath $private
+ $ownerBefore=$beforeAcl.GetOwner([Security.Principal.SecurityIdentifier]).Value
+ $groupBefore=$beforeAcl.GetGroup([Security.Principal.SecurityIdentifier]).Value
+ $content=Join-Path $private 'preserved.txt';[IO.File]::WriteAllText($content,'preserved')
+ # Existing explicit access must be removed, not retained alongside the three
+ # private principals. This adds access only to a disposable test directory.
+ $extra=[Security.AccessControl.FileSystemAccessRule]::new([Security.Principal.SecurityIdentifier]::new('S-1-1-0'),'ReadAndExecute','ContainerInherit, ObjectInherit','None','Allow')
+ [void]$beforeAcl.AddAccessRule($extra);Set-Acl -LiteralPath $private -AclObject $beforeAcl
+ foreach($pass in 1..2){
+  Set-SetupPrivateAccess $private
+  $afterAcl=Get-Acl -LiteralPath $private
+  $rules=@($afterAcl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier]))
+  $expected=@([Security.Principal.WindowsIdentity]::GetCurrent().User.Value,'S-1-5-18','S-1-5-32-544') | Sort-Object
+  $actual=@($rules | ForEach-Object {$_.IdentityReference.Value}) | Sort-Object
+  Assert ($afterAcl.AreAccessRulesProtected) "private DACL is protected on pass $pass"
+  Assert ($rules.Count -eq 3 -and ($actual -join ',') -eq ($expected -join ',')) "exact private principals on pass $pass"
+  Assert (@($rules | Where-Object {$_.IsInherited -or $_.AccessControlType -ne 'Allow' -or $_.FileSystemRights -ne 'FullControl' -or $_.InheritanceFlags -ne 'ContainerInherit, ObjectInherit' -or $_.PropagationFlags -ne 'None'}).Count -eq 0) "private rules retain full control and child inheritance on pass $pass"
+  Assert ($afterAcl.GetOwner([Security.Principal.SecurityIdentifier]).Value -eq $ownerBefore -and $afterAcl.GetGroup([Security.Principal.SecurityIdentifier]).Value -eq $groupBefore) "owner and group preserved on pass $pass"
+  Assert (([IO.File]::ReadAllText($content)) -eq 'preserved') "existing contents remain accessible on pass $pass"
+ }
  $fake=Join-Path $tmp 'no-auth.cmd';[IO.File]::WriteAllText($fake,"@echo off`r`necho Not signed in 1>&2`r`nexit /b 1`r`n")
  Assert (!(Test-GhAuthenticated $fake)) 'missing GitHub sign-in permits public fallback without terminating Windows PowerShell'
  function Get-SetupJson([string]$Endpoint){return [pscustomobject]@{type='file';encoding='base64';size=3;content='YWJj'}}

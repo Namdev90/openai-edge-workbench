@@ -68,6 +68,26 @@ function Assert-SetupPayload([string]$Launcher,$Manifest){
   }
  }finally{$zip.Dispose();$memory.Dispose()}
 }
+function Set-SetupPrivateAccess([string]$Path){
+ Assert-SetupPath $Path
+ $directory=[IO.DirectoryInfo]::new($Path)
+ # Load only the existing DACL, then persist only modified access rules. A new
+ # descriptor passed to Set-Acl can try to replace owner/audit sections and
+ # require SeSecurityPrivilege on an already-installed directory.
+ if($PSVersionTable.PSEdition -eq 'Core'){
+  $acl=[IO.FileSystemAclExtensions]::GetAccessControl($directory,[Security.AccessControl.AccessControlSections]::Access)
+ }else{$acl=$directory.GetAccessControl([Security.AccessControl.AccessControlSections]::Access)}
+ $acl.SetAccessRuleProtection($true,$false)
+ foreach($rule in @($acl.GetAccessRules($true,$false,[Security.Principal.SecurityIdentifier]))){$acl.RemoveAccessRuleSpecific($rule)}
+ foreach($sid in @([Security.Principal.WindowsIdentity]::GetCurrent().User.Value,'S-1-5-18','S-1-5-32-544')){
+  $identity=[Security.Principal.SecurityIdentifier]::new($sid)
+  $rule=[Security.AccessControl.FileSystemAccessRule]::new($identity,'FullControl','ContainerInherit, ObjectInherit','None','Allow')
+  [void]$acl.AddAccessRule($rule)
+ }
+ if($PSVersionTable.PSEdition -eq 'Core'){
+  [IO.FileSystemAclExtensions]::SetAccessControl($directory,$acl)
+ }else{$directory.SetAccessControl($acl)}
+}
 if($Library){return}
 if($env:OS -ne 'Windows_NT'){throw 'Windows 10/11 is required.'}
 if($Commit -and $Commit -notmatch '^[a-f0-9]{40}$'){throw 'Invalid requested commit.'}
@@ -75,12 +95,7 @@ if($Commit -and $Commit -notmatch '^[a-f0-9]{40}$'){throw 'Invalid requested com
 $lock=$null;$selected='';$stage=''
 try{
  Assert-SetupPath $Root;[void](New-Item -ItemType Directory -Path $Root -Force)
- $acl=New-Object Security.AccessControl.DirectorySecurity;$acl.SetAccessRuleProtection($true,$false)
- foreach($sid in @([Security.Principal.WindowsIdentity]::GetCurrent().User.Value,'S-1-5-18','S-1-5-32-544')){
-  $identity=New-Object Security.Principal.SecurityIdentifier($sid)
-  $rule=New-Object Security.AccessControl.FileSystemAccessRule($identity,'FullControl','ContainerInherit, ObjectInherit','None','Allow');$acl.AddAccessRule($rule)
- }
- Set-Acl -LiteralPath $Root -AclObject $acl
+ Set-SetupPrivateAccess $Root
  $lock=[IO.File]::Open((Join-Path $Root 'setup.lock'),'OpenOrCreate','ReadWrite','None')
  $ghCommand=Get-Command gh.exe -ErrorAction SilentlyContinue
  if($ghCommand){$script:Gh=$ghCommand.Source;$script:UseGh=Test-GhAuthenticated $script:Gh}
