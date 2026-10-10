@@ -4,6 +4,8 @@ import argparse, contextlib, hmac, http.server, json, os, secrets, sys, threadin
 import urllib.parse, urllib.request, webbrowser
 from pathlib import Path
 from engine import Workbench, ROOT_NAME, atomic_json, assert_regular_path
+from feature_hub import FeatureService
+from ai_assist import AIService
 
 ASSETS=Path(__file__).resolve().parent
 
@@ -14,6 +16,8 @@ class Server(http.server.ThreadingHTTPServer):
 
 def make_server(workbench:Workbench,token:str|None=None):
     capability=token or secrets.token_urlsafe(32)
+    features=FeatureService(workbench)
+    assistance=AIService(workbench,features)
     class Handler(http.server.BaseHTTPRequestHandler):
         server_version='EdgeWorkbench'
         def log_message(self,*args):pass  # Never log capability tokens or personal URLs.
@@ -63,6 +67,21 @@ def make_server(workbench:Workbench,token:str|None=None):
                     content=f.read_bytes() if f.is_file() else None
                 if content is not None:self.response(200,content,'text/plain; charset=utf-8')
                 else:self.response(404,{'error':'No report yet.'})
+            elif path=='/api/features':self.response(200,features.catalog())
+            elif path=='/api/features/history':
+                try:self.response(200,features.history())
+                except (OSError,ValueError):self.response(409,{'error':'Completed report history is unavailable or unsafe.'})
+            elif path=='/api/ai/providers':self.response(200,assistance.providers())
+            elif path.startswith('/api/ai/jobs/'):
+                identity=path.removeprefix('/api/ai/jobs/')
+                try:self.response(200,assistance.get(identity))
+                except KeyError:self.response(404,{'error':'Explanation expired or was not found.'})
+            elif path.startswith('/api/features/jobs/'):
+                identity=path.removeprefix('/api/features/jobs/')
+                if len(identity)!=32 or any(c not in '0123456789abcdef' for c in identity):
+                    self.response(404,{'error':'Feature job was not found.'});return
+                try:self.response(200,features.get(identity))
+                except KeyError:self.response(404,{'error':'Feature job expired or was not found.'})
             else:self.response(404,{'error':'Not found.'})
         def do_POST(self):
             if not self.allowed(api=True,write=True):return
@@ -79,6 +98,17 @@ def make_server(workbench:Workbench,token:str|None=None):
                 if path=='/api/start':
                     started=workbench.start(body)
                     self.response(200 if started else 409,{'started':started})
+                elif path=='/api/features/run':
+                    if set(body)-{'id','payload'}:raise ValueError('Unsupported feature request.')
+                    try:self.response(202,features.start(body.get('id'),body.get('payload',{})))
+                    except RuntimeError as exc:self.response(409,{'error':str(exc)})
+                elif path=='/api/ai/preview':self.response(200,assistance.preview(body))
+                elif path=='/api/ai/connect':
+                    try:self.response(200,assistance.connect(body))
+                    except RuntimeError as exc:self.response(409,{'error':str(exc)})
+                elif path=='/api/ai/ask':
+                    try:self.response(202,assistance.start(body))
+                    except RuntimeError as exc:self.response(409,{'error':str(exc)})
                 elif path=='/api/stop':
                     workbench.cancel.set();workbench.log('Stop requested. The current command is allowed to finish.','warning')
                     self.response(200,{'stopping':True})
@@ -144,7 +174,7 @@ def main(argv=None):
         if existing_window(root):return 0
         print('Another Workbench run owns the lock. Check its window before starting again.');return 2
     server=make_server(Workbench(root,simulate=args.simulate));port=server.server_address[1]
-    if args.all_tools:server.workbench.options={name:True for name in server.workbench.options}
+    if args.all_tools:server.workbench.options={name:name!='live' for name in server.workbench.options}
     session=root/'local-session.json'
     atomic_json(session,{'port':port,'token':server.capability,'pid':os.getpid()})
     with contextlib.suppress(OSError):session.chmod(0o600)

@@ -36,6 +36,8 @@ The browser sign-in requires your participation. No token needs to be pasted int
 
 The exact pinned downloader was fetched from GitHub, its hash checked, and its authenticated download/extraction/test path executed on Windows with NoLaunch. Windows/Linux CI and Windows bootstrap smoke tests passed. Full toolkit installation and account connectivity are established only by the actual installation report.
 
-This command preselects every tool pack, including the .NET daily SDK. Selections remain editable. The dashboard starts installation after a visible 12-second countdown; changing selections pauses it. The optional live model test consumes quota. Installation approvals/Store sign-in can require your input. No private beta access is promised.
+This command preselects every tool pack, including the .NET daily SDK. Model requests are off by default. Selections remain editable. The dashboard starts installation after a visible 12-second countdown; changing selections or reviewing a feature pauses it. The optional live model test consumes quota only if intentionally selected. Installation approvals/Store sign-in can require your input. No private beta access is promised.
+
+No Git, Python, web framework or coding knowledge is needed beforehand for public setup: the bootstrap handles its dependencies. Private GitHub access requires the account sign-in prerequisite above. Built-in report guidance works without API setup. Optional cloud AI accounts/keys and third-party sign-in remain separate from software installation.
 
 The standalone CMD in the repository contains the complete release snapshot. The setup CMD and desktop shortcut add published-source self-update. Historical installers under legacy/ are preserved as source references and are not executed.

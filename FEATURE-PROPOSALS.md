@@ -1,5 +1,12 @@
 # 100 new capability proposals
 
+> **Current context:** PR #1 merged this proposal snapshot on 10 October 2026.
+> It describes the v2.0.4 baseline, not all current gaps. Its IDs are
+> `roadmap:F001`–`roadmap:F100`; the separately implemented 100-action Feature
+> Studio uses `studio:f001`–`studio:f100` with different definitions. See
+> [current status reconciliation](docs/ROADMAP-STATUS.md) and the
+> [implemented catalog](docs/FEATURE-CATALOG.md). Merge alone is not implementation evidence.
+
 Documentation proposal only; none of these capabilities is implemented by this PR.
 This community utility is independent of OpenAI. Priorities are recommendations,
 not promises or an instruction to start 100 implementation jobs.
