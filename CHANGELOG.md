@@ -2,6 +2,14 @@
 
 Preview releases can encounter publisher/channel changes. Version observations describe the checked run, not permanent pins for future toolkit installs.
 
+## 3.0.0-preview.3 — 10 October 2026
+
+- Restyled the working dashboard as a tactile instrument console: brushed metal panels, beveled controls, recessed readouts, physical switches and subtle illuminated accents, with original offline CSS.
+- Moved the existing automatic-start controls above the tool selections and reduced the decorative header so setup stays easy to reach.
+- Preserved native keyboard controls, all 100 Feature Studio actions, explicit cloud consent, display preferences and honest installation states. Added forced-colors support to the material treatment.
+
+This application interface update uses the existing compatible-release selection engine and secure one-command bootstrap.
+
 ## 3.0.0-preview.2 — 10 October 2026
 
 - Completed rejected local HTTP requests without leaving small POST bodies unread, preventing intermittent Windows connection resets during bootstrap self-tests. Authorization remains checked before JSON parsing; discarding bytes has a strict size limit and overall deadline.

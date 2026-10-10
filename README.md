@@ -13,6 +13,8 @@
 
 Namu AI Workbench is an independent community utility, previously presented as **OpenAI Edge Workbench**. It is separate from AMReye.AI and is not an OpenAI product. Existing launcher names and installation paths remain compatible.
 
+The dashboard takes its cues from a physical instrument console: brushed metal panels, recessed status displays and tactile switches. Its controls remain keyboard accessible, with adjustable text size, reduced motion and a responsive layout. The screenshots below show the real interface in explicitly labeled simulation mode.
+
 ## Start in one command
 
 Paste into ordinary **Windows PowerShell** as your normal user:
@@ -27,7 +29,7 @@ The short command trusts the current GitHub launcher. [SETUP.md](SETUP.md) provi
 
 ## One dashboard, visible results
 
-![Simulated Namu AI Workbench dashboard showing setup and the local feature catalog](docs/assets/dashboard.png)
+![Simulated Namu AI Workbench dashboard showing setup and the local feature catalog](docs/assets/dashboard.jpg)
 
 *Actual dashboard rendered in explicit simulation mode. This screenshot shows the interface; it is not installation evidence.*
 
@@ -44,9 +46,11 @@ These are **100 implemented Feature Studio actions**, numbered `studio:f001`–`
 <details>
 <summary><strong>See Feature Studio and the mobile layout</strong></summary>
 
-![Feature Studio simulation with searchable, categorized capabilities](docs/assets/feature-studio.png)
+![Feature Studio simulation with searchable, categorized capabilities](docs/assets/feature-studio.jpg)
 
-<img src="docs/assets/mobile.png" alt="Simulated dashboard at a 400-pixel viewport" width="360">
+![Tactile setup switches in the simulated local dashboard](docs/assets/tactile-controls.jpg)
+
+<img src="docs/assets/mobile.jpg" alt="Simulated dashboard at a 390-pixel viewport with 125% text" width="360">
 
 </details>
 
@@ -65,7 +69,7 @@ Workbench preserves original programs, project environments, browser profiles, c
 <details>
 <summary><strong>See built-in report guidance</strong></summary>
 
-![Built-in guidance explaining a completed simulated report without account setup](docs/assets/guidance.png)
+![Built-in guidance explaining a completed simulated report without account setup](docs/assets/guidance.jpg)
 
 </details>
 

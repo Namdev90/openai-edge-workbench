@@ -20,4 +20,7 @@ if __name__=='__main__':
     assert ids==[f'F{i:03}' for i in range(1,101)],'Roadmap IDs were lost or conflated with the implemented catalog.'
     ET.parse(ROOT/'docs/assets/banner.svg')
     for path in (ROOT/'docs/assets').glob('*.png'):assert path.read_bytes().startswith(b'\x89PNG\r\n\x1a\n'),f'Invalid screenshot: {path.name}'
-    print(f'{checked} active documentation links, SVG/PNG assets and 100 separate roadmap IDs verified.')
+    for path in (ROOT/'docs/assets').glob('*.jpg'):
+        data=path.read_bytes()
+        assert data.startswith(b'\xff\xd8\xff') and data.endswith(b'\xff\xd9'),f'Invalid screenshot: {path.name}'
+    print(f'{checked} active documentation links, SVG/PNG/JPEG assets and 100 separate roadmap IDs verified.')

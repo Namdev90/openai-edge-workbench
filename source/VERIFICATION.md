@@ -1,6 +1,14 @@
 # Verification record
 
-Build: Namu AI Workbench 3.0.0-preview.2, 10 October 2026.
+Build: Namu AI Workbench 3.0.0-preview.3, 10 October 2026.
+
+## Preview.3 interface verification
+
+The material redesign preserves all 92 element IDs, eight named installation options, the existing JavaScript and protected API behavior. Original CSS supplies the brushed panels, recessed displays, tactile buttons and ON/OFF switches; no external component code, fonts or assets are loaded. An independent Astra review found no release blockers.
+
+Actual Chromium interactions checked the 1280-pixel desktop and 390-pixel mobile layouts, including 125% text without horizontal page overflow. Search, category and saved filters, keyboard palette execution, explicit profile application and keyboard switch activation succeeded. Forced-colors emulation restores native checkbox appearance and removes decorative thumbs; reduced motion removes the transition. Screenshots are from an isolated simulation and do not claim another real toolkit installation.
+
+The existing 282 application tests passed on Windows with the same three symlink-privilege skips. Both Windows PowerShell 5.1 and PowerShell 7 passed all 23 setup checks. The 21st design review reported informational hardcoded-color suggestions for the existing and new material shading, with no automated fixes applied. Its catalog was used for visual reference leads only; the project retains its native HTML controls and original implementation.
 
 ## Version 3.0 acceptance record
 
@@ -24,7 +32,7 @@ All 30 native read-only diagnostics were also exercised against the existing sel
 
 PR #1's exact documentation head was independently reviewed: 100 unique roadmap rows, valid dependency DAG, complete fields, immutable source targets and green Windows/Linux checks. It merged at `87c21ddd8ed176d7924140a0b1c33ac9ce641b7f`. Its proposal inventory is separate from the implemented Feature Studio catalog; [status reconciliation](../docs/ROADMAP-STATUS.md) records counterparts, partial coverage and planned work.
 
-The release build and payload/migration checks establish source-byte correspondence. GitHub CI repeats checks at published commits, and release assets are verified by downloading them again. No version 3.0 full-tool reinstall or extra paid model round trip was needed for this dashboard/report expansion. The actual full-install observations below belong to earlier builds and are retained as historical evidence.
+The release build and payload/migration checks establish source-byte correspondence. GitHub CI repeats checks at published commits, and release assets are verified by downloading them again. Following preview.2 publication, the owner ran all seven non-model optional selections with live model requests disabled: 30 of 30 operations finished, with 28 VERIFIED, one CATALOG_CURRENT and one REVIEW_NEEDED; no operation failed. The review result preserves Codex doctor warnings rather than treating exit code zero as complete health. Original laptop reports and subsequent private credential checks remain outside this public repository. The older full-install observations below are retained as historical evidence.
 
 ## Application checks
 

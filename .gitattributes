@@ -1,6 +1,7 @@
 # Preserve byte-identical executable launchers and archived GUI assets.
 *.cmd -text
 *.png -text
+*.jpg -text
 *.zip -text
 legacy/maintenance-planning/*.patch -text -whitespace
 # Git for Windows can otherwise convert Python/PowerShell source LF to CRLF
