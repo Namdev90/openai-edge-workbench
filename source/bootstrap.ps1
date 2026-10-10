@@ -1,7 +1,7 @@
 # OpenAI Edge Workbench bootstrap. Windows PowerShell 5.1+, current user.
 # No machine-wide execution-policy changes or remote-script evaluation.
 [CmdletBinding()]
-param([string]$Root = (Join-Path $env:LOCALAPPDATA 'OpenAI-Edge-Workbench'))
+param([string]$Root = (Join-Path $env:LOCALAPPDATA 'OpenAI-Edge-Workbench'),[switch]$NoLaunch)
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -56,6 +56,7 @@ try {
             if ($python) { break }
         }
     }
+    if ($NoLaunch -and -not $python) { throw 'Verification requires an existing Python 3.11+; no installer was run in NoLaunch mode.' }
     if (-not $python) {
         $uv = Locate-Uv
         if (-not $uv) {
@@ -96,6 +97,11 @@ try {
         $python = Test-Python ([string]$python) @()
         if (-not $python) { throw 'Bootstrap Python failed its execution/version check.' }
     }
+    Status 'Running offline application regression tests before launch.'
+    Push-Location $PSScriptRoot
+    try { & $python -m unittest discover -s tests; if ($LASTEXITCODE -ne 0) { throw 'Application self-tests failed. Dashboard was not launched.' } }
+    finally { Pop-Location }
+    if ($NoLaunch) { Status 'NO_LAUNCH_VERIFICATION_OK'; exit 0 }
     Status 'Opening the dashboard. Keep this launcher window open until you quit the dashboard.'
     $app = Join-Path $PSScriptRoot 'app.py'
     & $python $app --root $Root

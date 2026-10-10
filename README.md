@@ -1,43 +1,35 @@
 # OpenAI Edge Workbench
 
-Unofficial Windows GUI for auditing and updating locally installed ChatGPT/Codex development tools, supported prerelease runtimes, SDKs and related utilities. This project is **completely separate from AMReye.AI** and is not an OpenAI product.
+Unofficial one-click Windows installer/updater with a browser dashboard, selectable tool packs, live progress and an auditable repair report. This standalone repository is separate from AMReye.AI.
 
-## One-command install (Windows PowerShell)
+## Install
 
-Paste this entire line into normal Windows PowerShell:
+Download the setup launcher from Releases and double-click it, or use the exact PowerShell command in [SETUP.md](SETUP.md). Setup pins the initial downloader to a reviewed commit and verifies SHA256 before execution. The updater resolves one current main commit, validates the complete launcher and embedded source, runs offline tests, and opens the dashboard.
 
-```powershell
-& { $ErrorActionPreference='Stop'; $p=Join-Path $env:TEMP 'OpenAI-Edge-Workbench.cmd'; Invoke-WebRequest 'https://raw.githubusercontent.com/Namdev90/openai-edge-workbench/44c3c10b7332341d1a57d486be80bfce9acd47ea/OpenAI-Edge-Workbench.cmd' -UseBasicParsing -OutFile $p; if ((Get-FileHash $p -Algorithm SHA256).Hash.ToLowerInvariant() -ne '6a42578d7330e8baf82ea93c5cb23120cb7c76210ed43947e0fe2f0e092db014') { throw 'Downloaded file failed integrity verification' }; & $p }
+The dashboard starts after a visible 12-second countdown. Changing selections pauses that countdown. Public nightly/alpha/beta/Insiders/Canary channels are selected where supported. The optional live Codex request uses model quota or API billing; disable it in the dashboard if desired. Windows package installation approvals and account sign-in may require your input.
+
+If the repository is private, use the authenticated command in SETUP.md. The updater uses GitHub CLI's existing stored sign-in and never exports its token to raw download hosts or diagnostics. The repository's current visibility is preserved.
+
+## Updates, migration and reports
+
+The **OpenAI Edge Workbench** desktop shortcut refreshes published source before each launch. Offline fallback rechecks cached launcher and embedded source hashes and records the failed update. Fresh Python/JavaScript SDK candidates are selected only after checks; failed packs retain the previous managed SDK selection. Existing projects, credentials, Codex history/configuration, provider routes, original applications and browser profiles are preserved.
+
+The setup launcher updates published code. The self-contained OpenAI-Edge-Workbench.cmd in the repository is also available as a snapshot for that release. Neither invents repair code or enables private publisher betas.
+
+Use **Copy report**, or open:
+
+```text
+%LOCALAPPDATA%\OpenAI-Edge-Workbench\reports\<run-id>\Paste-Into-ChatGPT.txt
 ```
 
-The downloader uses a specific reviewed GitHub commit, verifies the exact launcher SHA-256, and runs it. The installer then opens a local graphical dashboard showing installation progress and logs. Because this is an unsigned third-party script, inspect its source before accepting Windows download warnings; never disable Defender/SmartScreen to run it. Windows Store sign-in and administrator approval may still be required by some selected software.
+The report records selected/observed versions, exits, failures, model checks and the source commit. Review redacted text before sharing. No logs or messages are automatically sent. Local package installation and HTTP reachability do not establish cloud authorization or cross-device synchronization.
 
-**Direct download:** [OpenAI-Edge-Workbench.cmd](OpenAI-Edge-Workbench.cmd) · [Setup.ps1](Setup.ps1).
+## Source and verification
 
-The dashboard automatically starts after a visible 12-second countdown unless you pause/change selections. The optional authenticated Codex test is enabled by default and can consume model quota or incur charges; turn it off in the dashboard if desired. Package downloads can be several GB.
+[source/](source/) contains every embedded application file. [release.json](release.json) and [tools/verify_payload.py](tools/verify_payload.py) verify exact byte correspondence, including tests. No source-byte exception is used. [tools/build_release.py](tools/build_release.py) rebuilds the deterministic launcher after edits.
 
-## What it does
+The reviewed build passes 48 application tests and 11 setup/security tests in Windows PowerShell 5.1 and PowerShell 7. The actual CMD extraction and bootstrap were exercised in NoLaunch mode on Windows, with an existing Python, without installing toolkit apps or making model requests. CI repeats application/distribution checks on Windows and Linux, plus the Windows bootstrap smoke test. This does not certify a complete laptop installation; the installation report is still required.
 
-- Detects Windows app, CLI, SDK, runtime, extension, dependency and supported MCP integration state.
-- Prefers compatible, publicly released experimental channels, including nightly, alpha, beta, preview, Insiders and Canary, when the selected package actually provides them.
-- Installs/updates supported tools using WinGet, official package registries or verified release manifests, and offers selectable optional packs.
-- Preserves unrelated apps, profiles, project runtimes, chats, credentials and provider routing; migrates only supported settings and cleans **utility-owned** unused runtimes.
-- Produces a redacted `Paste-Into-ChatGPT.txt` report to diagnose failed or incomplete steps.
-- Does **not** grant ChatGPT authorization to external cloud services or guarantee successful migration of every app.
+[MIGRATION.md](MIGRATION.md) and [migration-audit.json](migration-audit.json) document exact historical archives, branch cleanup conditions and verification. Historical files in legacy/ are inert references and are not executed by the active setup.
 
-The source code is in [`source/`](source/). Test with `cd source && python -m unittest discover -s tests -v`; the CI pipeline runs on Ubuntu and Windows. All application code is identical to the embedded payload in the launcher; one regression test in the repository has been made Windows path-separator portable, documented in `tools/verify_payload.py`.
-
-## Legacy snapshots
-
-Prior installations are archived under `legacy/` for reference only: the standalone audit script, Namu AI Edge and OpenAI Device Manager. Do not run those old scripts; their hardcoded download paths refer to older AMReye.AI branches.
-
-[Migration record](MIGRATION.md) · [Source detail](source/README.md) · [Verification limits](source/VERIFICATION.md).
-
-The historical files were copied byte-for-byte from their old GitHub branches and individually checked by Git blob SHA. The old branch tips were then reset to unchanged `amreye-ai/main` with an exact-SHA lease; their names and historical Git objects remain. AMReye.AI's main branch was not edited.
-
-## Logs, support and important limits
-
-On Windows, copy the diagnostic text from the GUI or find it at:
-`%LOCALAPPDATA%\OpenAI-Edge-Workbench\reports\<run-id>\Paste-Into-ChatGPT.txt`.
-
-Review the report for private information before sharing. This repository and its test suite cannot prove the completed installation or connected app sign-ins until the utility actually runs on the laptop. No credentials, installed applications or messages are uploaded by this repository.
+[Detailed scope](source/README.md) · [Verification record](source/VERIFICATION.md) · [Official publisher references](source/SOURCES.md).

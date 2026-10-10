@@ -10,8 +10,8 @@ jobs:
         os: [windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.13'
       - name: Application regression tests
@@ -19,3 +19,21 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Verify embedded payload against readable source
         run: python tools/verify_payload.py
+      - name: Verify archived migration source
+        run: python tools/verify_migration.py
+      - name: Windows setup and parser tests
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/Test-Setup.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pwsh.exe -NoProfile -File tools/Test-Setup.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Windows CMD extraction and offline bootstrap smoke
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $env:EDGE_ROOT=Join-Path $env:RUNNER_TEMP 'workbench-launcher-smoke'
+          $env:EDGE_NO_LAUNCH='1'
+          & ./OpenAI-Edge-Workbench.cmd
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

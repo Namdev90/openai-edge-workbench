@@ -31,7 +31,7 @@ import urllib.request
 import uuid
 import zipfile
 
-VERSION = '2.0.0'
+VERSION = '2.0.1-preview.1'
 SCHEMA = 'openai-edge-workbench/2'
 ROOT_NAME = 'OpenAI-Edge-Workbench'
 DOCS_MCP = 'https://developers.openai.com/mcp'
@@ -145,7 +145,28 @@ class TrustedRedirect(urllib.request.HTTPRedirectHandler):
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
+def is_reparse(path: Path) -> bool:
+    try:
+        return path.is_symlink() or bool(getattr(path.lstat(), 'st_file_attributes', 0) & getattr(stat, 'FILE_ATTRIBUTE_REPARSE_POINT', 1024))
+    except FileNotFoundError:
+        return False
+
+
+def assert_regular_path(path: Path) -> None:
+    path = Path(os.path.abspath(path))
+    if any(is_reparse(p) for p in (path, *path.parents)):
+        raise ValueError('Refusing a symlink or junction in a managed path.')
+
+
+def contains_reparse(path: Path) -> bool:
+    for root, dirs, files in os.walk(path, followlinks=False):
+        if any(is_reparse(Path(root, name)) for name in (*dirs, *files)):
+            return True
+    return False
+
+
 def safe_extract(archive: Path, target: Path) -> None:
+    assert_regular_path(target)
     target = target.resolve()
     target.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(archive) as z:
@@ -166,6 +187,7 @@ def safe_extract(archive: Path, target: Path) -> None:
 
 def merge_missing(source: Path, target: Path) -> dict:
     result = {'copied': [], 'identical': [], 'conflicts': [], 'skipped': []}
+    assert_regular_path(source); assert_regular_path(target)
     if not source.is_dir():
         return result
     target.mkdir(parents=True, exist_ok=True)
@@ -176,20 +198,20 @@ def merge_missing(source: Path, target: Path) -> dict:
             src = Path(root,name)
             rel = src.relative_to(source)
             if name.lower() in excluded or src.is_symlink():
-                result['skipped'].append(str(rel)); continue
+                result['skipped'].append(rel.as_posix()); continue
             # Copy configuration text/snippets only, never browser state or databases.
             if src.suffix.lower() not in ('.json','.jsonc','.code-snippets','.md'):
-                result['skipped'].append(str(rel)); continue
+                result['skipped'].append(rel.as_posix()); continue
             dest = target/rel
             if not dest.resolve().is_relative_to(target.resolve()):
-                result['skipped'].append(str(rel)); continue
+                result['skipped'].append(rel.as_posix()); continue
             if dest.exists():
                 same = not dest.is_symlink() and src.read_bytes() == dest.read_bytes()
-                result['identical' if same else 'conflicts'].append(str(rel)); continue
+                result['identical' if same else 'conflicts'].append(rel.as_posix()); continue
             if not dest.resolve().is_relative_to(target.resolve()):
-                result['skipped'].append(str(rel)); continue
+                result['skipped'].append(rel.as_posix()); continue
             dest.parent.mkdir(parents=True,exist_ok=True)
-            shutil.copy2(src,dest); result['copied'].append(str(rel))
+            shutil.copy2(src,dest); result['copied'].append(rel.as_posix())
     return result
 
 
@@ -281,6 +303,7 @@ def architecture() -> str:
 
 class Workbench:
     def __init__(self, root: Path, *, simulate: bool=False):
+        assert_regular_path(root)
         self.root = root.resolve()
         self.root.mkdir(parents=True,exist_ok=True)
         self.simulate = simulate
@@ -295,6 +318,8 @@ class Workbench:
         self.options = default_options()
         self.plan: list[dict] = []
         self.active = {}
+        self.python_candidate = None; self.python_candidate_failed = False
+        self.js_candidate = None; self.js_candidate_failed = False
         self.state_file = self.root/'state.json'
         self.state = {'schema':SCHEMA,'tools':{}}
         if self.state_file.exists():
@@ -316,6 +341,11 @@ class Workbench:
                            'No project dependency, credential, cookie or native Work/proxy configuration is replaced.',
                            'Only this catalog is managed. New products and private beta access require a future catalog update.',
                        ]}
+        provenance=self.root/'Setup-Status.json'
+        if provenance.is_file():
+            with contextlib.suppress(OSError,ValueError):
+                status=json.loads(provenance.read_text(encoding='utf-8-sig'))
+                self.report['code_update']={k:redact(status.get(k,'')) for k in ('repository','commit','state','utc','error')}
         self.env = dict(os.environ)
         self.env.update({'PYTHONUTF8':'1','PYTHONIOENCODING':'utf-8','NO_COLOR':'1','CI':'1',
                          'UV_NO_CONFIG':'1','UV_PYTHON_INSTALL_DIR':str(self.root/'runtimes'/'uv-python')})
@@ -364,7 +394,9 @@ class Workbench:
             try:
                 for line in iter(proc.stdout.readline,b''):
                     q.put(line.decode('utf-8',errors='replace').rstrip())
-            finally:q.put(None)
+            finally:
+                proc.stdout.close()
+                q.put(None)
         threading.Thread(target=read_output,daemon=True).start()
         started=time.monotonic(); lines=[]; length=0; ended=False; timed_out=False
         while not ended or proc.poll() is None:
@@ -509,6 +541,8 @@ class Workbench:
                     row['status']='STOPPED';row['detail']=redact(str(exc));self.cancel.set()
                     self.log(row['detail'],'error')
                 except Exception as exc:
+                    if item['id'] in ('python','python-packages','documents','science'):self.python_candidate_failed=True
+                    if item['id'] in ('javascript','playwright'):self.js_candidate_failed=True
                     row['status']='FAILED';row['detail']=redact(str(exc))
                     self.log(row['detail'],'error')
                 finally:
@@ -725,18 +759,26 @@ class Workbench:
         version=selected['version'];key=selected['key']
         self.current_result['expected']=version
         self.require(self.run_command([uv,'python','install',key],timeout=1200,label='Install selected CPython '+version),'CPython installation')
-        directory=self.root/'environments'/('python-'+version)
+        directory=self.root/'environments'/('python-'+version+'-'+self.run_id)
+        assert_regular_path(directory)
         py=directory/'Scripts/python.exe'
         if not py.is_file():
             self.require(self.run_command([uv,'venv','--managed-python','--python',key,directory],timeout=300,label='Create isolated Python SDK environment'),'Isolated Python environment')
         checked=self.require(self.run_command([py,'-c','import platform; print(platform.python_version())'],timeout=40,label='Verify Python build'),'Python execution')
         if not version_matches(checked.out,version):raise OperationError('Python interpreter does not match selected release.')
         atomic_json(directory/'.workbench-owned.json',{'owned_by':SCHEMA,'version':version})
-        self.activate('python',version,[py],'uv python list --all-versions; Astral python-build-standalone')
+        self.python_candidate={'version':version,'command':[str(py)],'source':'uv catalog; isolated candidate'}
         self.current_result['detail']='Newest listed native CPython selected; SDK environment is isolated from existing projects.'
 
     def install_python_packages(self, packages: list[str]):
-        py=self.active.get('python',{}).get('command',[None])[0]
+        try:
+            return self._install_python_packages(packages)
+        except Exception:
+            self.python_candidate_failed = True
+            raise
+
+    def _install_python_packages(self, packages: list[str]):
+        py=(self.python_candidate or {}).get('command',[None])[0]
         uv=self.find('uv.exe')
         if not uv or not py or not Path(py).is_file():raise OperationError('Managed Python/uv unavailable. No default interpreter was modified.')
         installed=[];failed=[]
@@ -764,7 +806,8 @@ class Workbench:
     def step_science(self):self.install_python_packages(['biopython','scipy','sympy','scikit-learn'])
 
     def install_js_packages(self,packages:list[str]):
-        base=self.root/'environments/javascript'
+        base=self.root/'environments'/('javascript-'+self.run_id)
+        assert_regular_path(base)
         base.mkdir(parents=True,exist_ok=True)
         manifest=base/'package.json'
         if not manifest.exists():atomic_json(manifest,{'name':'openai-edge-workbench-tools','private':True,'version':'1.0.0'})
@@ -783,10 +826,11 @@ class Workbench:
             except Exception as exc:
                 failed.append(name);self.log(str(exc),'error')
         self.current_result['versions']=versions
-        complete=dict(self.active.get('javascript',{}).get('versions',{})); complete.update(versions)
-        self.active['javascript']={'version':','.join(f'{k}@{v}' for k,v in complete.items()),'versions':complete,'path':str(base),'source':'https://registry.npmjs.org'}
-        self.save_state()
-        if failed:raise OperationError('JavaScript installs failed: '+', '.join(failed))
+        if failed:
+            self.js_candidate_failed=True
+            raise OperationError('JavaScript installs failed: '+', '.join(failed))
+        complete=dict((self.js_candidate or {}).get('versions',{})); complete.update(versions)
+        self.js_candidate={'version':','.join(f'{k}@{v}' for k,v in complete.items()),'versions':complete,'path':str(base),'source':'https://registry.npmjs.org'}
         return base
 
     def step_javascript(self):
@@ -950,8 +994,9 @@ class Workbench:
             except urllib.error.HTTPError as exc:endpoints[name]={'http_status':exc.code,'transport_reached':True,'auth_or_protocol_verified':False}
             except Exception as exc:endpoints[name]={'transport_reached':False,'detail':redact(str(exc)),'auth_or_protocol_verified':False}
         checks['network']=endpoints
-        if self.active.get('python'):
-            py=self.active['python']['command'][0]
+        candidate=self.python_candidate if not self.python_candidate_failed else self.active.get('python')
+        if candidate:
+            py=candidate['command'][0]
             smoke=self.run_command([py,'-c',"import openai,agents;print('SDK_IMPORT_OK')"],quiet=True,timeout=60,label='Verify Python OpenAI SDK imports')
             checks['python_sdk_imports']={'passed':smoke.code==0 and 'SDK_IMPORT_OK' in smoke.out,'exit_code':smoke.code}
         self.step_report()
@@ -981,6 +1026,7 @@ class Workbench:
         removed=[];retained=[]
         for family in ('node','codex','openai-cli'):
             parent=self.root/'runtimes'/family
+            assert_regular_path(parent)
             if not parent.is_dir():continue
             dirs=[p for p in parent.iterdir() if p.is_dir() and not p.is_symlink() and not getattr(p,'is_junction',lambda:False)() and (p/'.workbench-owned.json').is_file()]
             dirs.sort(key=lambda p:p.stat().st_mtime,reverse=True)
@@ -993,11 +1039,30 @@ class Workbench:
                 marker=json.loads((p/'.workbench-owned.json').read_text(encoding='utf-8'))
                 if marker.get('owned_by')!=SCHEMA:continue
                 if not p.resolve().is_relative_to((self.root/'runtimes').resolve()):raise OperationError('Cleanup path escaped the managed root.')
+                assert_regular_path(p)
+                if contains_reparse(p):
+                    retained.append(p.name);self.log('Retained managed generation containing a junction/symlink: '+p.name,'warning');continue
                 try:shutil.rmtree(p);removed.append(family+'/'+p.name)
                 except OSError:self.log('An old managed generation is busy; retained: '+p.name,'warning')
         self.current_result.update(removed=removed,retained=retained,detail='Only unused Workbench-owned runtime generations removed; two newest generations retained. System apps, projects and SDKs were not removed.')
 
+    def activate_candidates(self):
+        if self.python_candidate and not self.python_candidate_failed:
+            py=self.python_candidate['command'][0]
+            checked=self.run_command([py,'-c',"import openai,agents;print('SDK_IMPORT_OK')"],quiet=True,timeout=60,label='Verify candidate SDK imports before activation')
+            if checked.code == 0 and 'SDK_IMPORT_OK' in checked.out:
+                self.active['python']=self.python_candidate
+                self.python_candidate=None
+            else:
+                self.python_candidate_failed=True
+                self.log('Candidate Python SDK imports failed. Previous managed Python remains selected.','error')
+        if self.js_candidate and not self.js_candidate_failed:
+            self.active['javascript']=self.js_candidate
+            self.js_candidate=None
+        self.save_state()
+
     def step_report(self):
+        self.activate_candidates()
         bin_dir=self.root/'bin';bin_dir.mkdir(parents=True,exist_ok=True)
         def bat_path(text):return str(text).replace('%','%%')
         aliases={'codex':['codex','codex-edge'],'openai-api':['openai-api'],'python':['python-edge'],'node':['node-edge'],'npm':['npm-edge'],'dotnet':['dotnet-edge']}

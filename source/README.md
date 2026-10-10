@@ -1,4 +1,4 @@
-# OpenAI Edge Workbench 2.0
+# OpenAI Edge Workbench 2.0.1-preview.1
 
 Independent, unsigned Windows maintenance utility generated for Namu. It is not an OpenAI product.
 
@@ -69,3 +69,9 @@ See `VERIFICATION.md` for actual commands and results. Python logic, local HTTP 
 ## Source entry points
 
 `bootstrap.ps1` bootstraps the Python GUI; `app.py` serves the bounded loopback interface; `engine.py` manages explicit software adapters; `index.html`, `style.css`, `app.js` render the dashboard; `tests` contains automated tests. `SOURCES.md` lists official documentation. Source dependencies: Python standard library only. No separate web framework or GUI library is installed for the dashboard.
+
+## Reviewed standalone updater
+
+Use the repository Setup.ps1 command or the setup release asset for self-update. Setup resolves one immutable main commit, verifies the launcher and every embedded source file, and uses GitHub CLI stored authentication when available. The desktop Workbench shortcut repeats that update check. The direct embedded CMD remains a complete snapshot of its release.
+
+Every launch extracts fresh verified source and runs offline application tests before opening the dashboard. Python and JavaScript SDKs are installed into per-run candidates; failed packs or failed SDK imports preserve the previous selected SDK environment. Cached source is not trusted solely because a marker exists. Junctions in managed paths and nested cleanup candidates are rejected. Update provenance appears in the diagnostic report.

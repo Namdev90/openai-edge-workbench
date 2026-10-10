@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse, contextlib, hmac, http.server, json, os, secrets, sys, threading, time
 import urllib.parse, urllib.request, webbrowser
 from pathlib import Path
-from engine import Workbench, ROOT_NAME, atomic_json
+from engine import Workbench, ROOT_NAME, atomic_json, assert_regular_path
 
 ASSETS=Path(__file__).resolve().parent
 
@@ -129,7 +129,7 @@ def main(argv=None):
     parser.add_argument('--root',type=Path,default=Path(os.environ.get('LOCALAPPDATA',str(Path.home())))/ROOT_NAME)
     parser.add_argument('--simulate',action='store_true',help='Explicit no-install demo; reports are labeled simulated')
     parser.add_argument('--no-browser',action='store_true')
-    args=parser.parse_args(argv);root=args.root.resolve();root.mkdir(parents=True,exist_ok=True)
+    args=parser.parse_args(argv);assert_regular_path(args.root);root=args.root.resolve();root.mkdir(parents=True,exist_ok=True)
     try:lock=InstanceLock(root)
     except OSError:
         if existing_window(root):return 0

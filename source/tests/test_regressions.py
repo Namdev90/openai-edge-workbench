@@ -1,7 +1,16 @@
-import json, tempfile, unittest
+import json, tempfile, unittest, os, subprocess, base64
 from pathlib import Path
 from unittest.mock import patch
 import engine
+
+def directory_link(link, target):
+    if os.name != 'nt':
+        link.symlink_to(target, target_is_directory=True)
+        return
+    # Junctions require no administrator/developer-mode privilege.
+    literal=lambda p: "'"+str(p).replace("'","''")+"'"
+    body='New-Item -ItemType Junction -Path '+literal(link)+' -Target '+literal(target)+' -ErrorAction Stop | Out-Null'
+    subprocess.run(['powershell.exe','-NoProfile','-EncodedCommand',base64.b64encode(body.encode('utf-16le')).decode()],check=True,capture_output=True)
 
 class RegressionTests(unittest.TestCase):
     def test_combined_alpha_platform_package_is_not_a_channel(self):
@@ -11,7 +20,7 @@ class RegressionTests(unittest.TestCase):
             p=Path(t); a=p/'a'; b=p/'b'; out=p/'outside'
             (a/'snippets').mkdir(parents=True); b.mkdir();out.mkdir()
             (a/'snippets'/'code.json').write_text('private')
-            (b/'snippets').symlink_to(out,target_is_directory=True)
+            directory_link(b/'snippets',out)
             result=engine.merge_missing(a,b)
             self.assertFalse((out/'code.json').exists())
             self.assertIn('snippets/code.json', [Path(p).as_posix() for p in result['skipped']])
