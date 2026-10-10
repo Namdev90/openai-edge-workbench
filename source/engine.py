@@ -31,7 +31,7 @@ import urllib.request
 import uuid
 import zipfile
 
-VERSION = '3.0.0-preview.3'
+VERSION = '3.0.0-preview.4'
 SCHEMA = 'openai-edge-workbench/2'
 ROOT_NAME = 'OpenAI-Edge-Workbench'
 DOCS_MCP = 'https://developers.openai.com/mcp'

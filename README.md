@@ -1,123 +1,140 @@
-<p align="center"><img src="docs/assets/banner.svg" alt="Namu AI Workbench — experimental tools, visible evidence" width="100%"></p>
+<p align="center"><img src="docs/assets/banner.svg" alt="Namu AI Workbench — experimental tools, visible evidence. A local Windows console with 100 Feature Studio actions." width="100%"></p>
 
 <p align="center">
   <a href="https://github.com/Namdev90/openai-edge-workbench/actions/workflows/verify.yml"><img src="https://github.com/Namdev90/openai-edge-workbench/actions/workflows/verify.yml/badge.svg" alt="Workbench tests"></a>
-  <a href="https://github.com/Namdev90/openai-edge-workbench/releases"><img src="https://img.shields.io/github/v/release/Namdev90/openai-edge-workbench?include_prereleases&label=preview&color=4dd6bb" alt="Preview release"></a>
-  <img src="https://img.shields.io/badge/platform-Windows-5c9cdd" alt="Windows">
-  <a href="docs/FEATURE-CATALOG.md"><img src="https://img.shields.io/badge/Feature_Studio-100_actions-4dd6bb" alt="100 implemented Feature Studio actions"></a>
+  <a href="https://github.com/Namdev90/openai-edge-workbench/releases"><img src="https://img.shields.io/github/v/release/Namdev90/openai-edge-workbench?include_prereleases&label=preview&labelColor=0E1730&color=AD92FF&style=flat-square" alt="Published preview release"></a>
+  <img src="https://img.shields.io/badge/Windows-x64%20%2F%20ARM64-6EE7FF?labelColor=0E1730&style=flat-square" alt="Windows x64 and ARM64">
+  <a href="docs/FEATURE-CATALOG.md"><img src="https://img.shields.io/badge/Feature%20Studio-100%20actions-86EFCA?labelColor=0E1730&style=flat-square" alt="100 implemented Feature Studio actions"></a>
 </p>
 
-<p align="center"><strong>A local Windows workspace for installing compatible experimental tools, inspecting your environment, and keeping the evidence close.</strong></p>
-
-<p align="center"><a href="SETUP.md">Get started</a> · <a href="docs/FEATURE-CATALOG.md">100 actions</a> · <a href="docs/FEATURE-STUDIO.md">Dashboard guide</a> · <a href="source/VERIFICATION.md">Verification</a> · <a href="CONTRIBUTING.md">Contribute</a></p>
-
-Namu AI Workbench is an independent community utility, previously presented as **OpenAI Edge Workbench**. It is separate from AMReye.AI and is not an OpenAI product. Existing launcher names and installation paths remain compatible.
-
-The dashboard takes its cues from a physical instrument console: brushed metal panels, recessed status displays and tactile switches. Its controls remain keyboard accessible, with adjustable text size, reduced motion and a responsive layout. The screenshots below show the real interface in explicitly labeled simulation mode.
+<p align="center"><strong>Install compatible preview tools. Inspect your environment. Keep the evidence on your computer.</strong></p>
 
 ## Start in one command
 
-Paste into ordinary **Windows PowerShell** as your normal user:
+Paste into ordinary **Windows PowerShell**, as your normal user:
 
 ```powershell
 irm https://raw.githubusercontent.com/Namdev90/openai-edge-workbench/main/Run.ps1 | iex
 ```
 
-The launcher updates verified application source, runs its offline checks, and opens the dashboard with all tool packs selected. A visible **12-second countdown** starts installation. Change a selection, open a feature action, or press **Pause auto-start** to review first. Windows installation approvals and account sign-in can require your input.
+**Verified application update → offline checks → graphical setup.** All tool packs start selected. The dashboard's visible **12-second countdown** begins installation; press **Pause auto-start**, change a selection, or open a feature action to review first. Windows approvals and account sign-in may require your input.
 
-The short command trusts the current GitHub launcher. [SETUP.md](SETUP.md) provides the independently checksum-pinned first download, authenticated private-GitHub setup, and downloadable one-click CMD. Model requests are **off by default**, including when all tool packs are selected. The optional live Codex test uses account quota or API billing when you intentionally enable it.
+The short command trusts the current GitHub launcher. [**Setup options**](SETUP.md) include an independently checksum-pinned first download, authenticated private-GitHub bootstrap, and a downloadable one-click CMD. Model requests are **off by default**. The optional live Codex test uses quota or API billing only when you enable it.
 
-## One dashboard, visible results
+<p align="center"><a href="docs/FEATURE-STUDIO.md">Dashboard guide</a> · <a href="docs/FEATURE-CATALOG.md">All 100 actions</a> · <a href="source/VERIFICATION.md">Verification record</a> · <a href="ALTERNATIVES.md">Alternatives</a> · <a href="CONTRIBUTING.md">Contribute</a></p>
 
-![Simulated Namu AI Workbench dashboard showing setup and the local feature catalog](docs/assets/dashboard.jpg)
+## Your tools, one console
 
-*Actual dashboard rendered in explicit simulation mode. This screenshot shows the interface; it is not installation evidence.*
+![Namu AI Workbench dashboard in explicit simulation mode, with tool selections and recorded statuses](docs/assets/dashboard.jpg)
 
-| Workspace | What it does |
+*The real interface in explicit simulation mode. Screenshots show the product; they are not installation evidence.*
+
+Midnight-blue panels, recessed displays and tactile controls give the dashboard the feel of a physical instrument console. Keyboard navigation, adjustable text size, reduced motion and responsive layouts keep it usable beyond the desktop.
+
+<p align="center"><img src="docs/assets/capabilities.svg" alt="Feature Studio: 30 diagnostics, 35 report analyses, 25 planning and export actions, and 10 browser controls — 100 implemented actions." width="100%"></p>
+
+| Workspace | Capabilities |
 | --- | --- |
-| **Install & update** | Select official public nightly, alpha, beta, Insiders, Canary and daily channels where supported. Resolve compatibility before activating managed runtimes. |
-| **Inspect** | Run 30 on-demand checks for resources, command routing, ownership, provenance, runtime health and official catalogs. |
-| **Understand** | Open 35 report analyses for failures, warnings, migration coverage, quotas, verification limits and changes between runs. |
-| **Plan & export** | Use 25 actions: ten installation profiles, plan/dependency reviews, a local saved recipe, and JSON/Markdown/CSV/HTML/ZIP exports. |
-| **Make it yours** | Use ten browser controls for search, categories, favorites, density, text size, reduced motion, log filters and a keyboard palette. |
+| **Inspect · 30 actions** | On-demand resource, command-routing, ownership, provenance, runtime-health and official-catalog checks. |
+| **Understand · 35 actions** | Completed-report analyses for failures, warnings, migration coverage, quotas, verification limits and changes between runs. |
+| **Plan & export · 25 actions** | Ten installation profiles, plan/dependency reviews, a local saved recipe, and JSON, Markdown, CSV, HTML and ZIP exports. |
+| **Make it yours · 10 controls** | Search, categories, favorites, density, text size, reduced motion, log filters and a keyboard palette. |
 
-These are **100 implemented Feature Studio actions**, numbered `studio:f001`–`studio:f100`. They include distinct analyses, presets and display controls; they are not 100 new software installers. [The catalog](docs/FEATURE-CATALOG.md) lists every action, its effect and prerequisites. [PR #1](https://github.com/Namdev90/openai-edge-workbench/pull/1) contributed a separate 100-item proposal roadmap. Its `roadmap:Fnnn` IDs and fuller acceptance criteria are tracked in [roadmap status](docs/ROADMAP-STATUS.md).
+These are **100 implemented Feature Studio actions**, `studio:f001`–`studio:f100`: analyses, presets and display controls as well as diagnostics. They are not 100 software installers. [The catalog](docs/FEATURE-CATALOG.md) lists every effect and prerequisite. The separate [100-item proposal roadmap](docs/ROADMAP-STATUS.md), contributed through [PR #1](https://github.com/Namdev90/openai-edge-workbench/pull/1), uses `roadmap:Fnnn` IDs and fuller acceptance criteria.
 
 <details>
-<summary><strong>See Feature Studio and the mobile layout</strong></summary>
+<summary><strong>Explore Feature Studio, tactile controls and the mobile layout</strong></summary>
 
-![Feature Studio simulation with searchable, categorized capabilities](docs/assets/feature-studio.jpg)
+![Searchable and categorized Feature Studio in simulation mode](docs/assets/feature-studio.jpg)
 
-![Tactile setup switches in the simulated local dashboard](docs/assets/tactile-controls.jpg)
+![Physical-console style setup controls in simulation mode](docs/assets/tactile-controls.jpg)
 
 <img src="docs/assets/mobile.jpg" alt="Simulated dashboard at a 390-pixel viewport with 125% text" width="360">
 
 </details>
 
-## Tools, compatibility and preservation
+## Official channels, compatible runtimes
 
-The core installs ChatGPT desktop, Codex CLI, the OpenAI API CLI and SDKs, Node nightly, compatible Python, VS Code Insiders, PowerShell Preview, Terminal Preview, Git, GitHub CLI, uv and WebView2. Optional packs add document/data/media libraries and utilities, scientific Python, Chrome Canary/Playwright, and the .NET daily SDK. [Detailed supported scope](source/README.md) explains each pack.
+Select supported public **nightly, alpha, beta, Insiders, Canary and daily** channels. Workbench resolves compatibility before activating managed runtimes and records unavailable channels, exclusions and transport failures.
 
-Node nightly remains the tool runtime. npm uses the newest official private Node host satisfying its unchanged engine requirements. Python is selected only after the **entire selected package set** resolves to compatible binary wheels. Exclusions and transport failures appear in the report; unavailable private preview channels are never invented.
+<details>
+<summary><strong>Tools and compatibility policy</strong></summary>
 
-Workbench preserves original programs, project environments, browser profiles, credentials, Codex history and provider routes. Supported editor migration copies missing settings and default-profile extension IDs; conflicts remain for review. Cleanup removes only unused generations owned by Workbench. Historical Namu AI Edge, Device Manager and audit sources are retained as inert archives; [migration reconciliation](MIGRATION.md) records what was recovered and what is active.
+The core includes ChatGPT desktop, Codex CLI, the OpenAI API CLI and SDKs, Node nightly, compatible Python, VS Code Insiders, PowerShell Preview, Terminal Preview, Git, GitHub CLI, uv and WebView2. Optional packs add document/data/media libraries and utilities, scientific Python, Chrome Canary/Playwright, and the .NET daily SDK. Availability and verification are recorded per tool; [supported scope](source/README.md) explains the packs and prerequisites.
 
-## Help without configuration
+Node nightly remains the tool runtime. npm uses the newest official private Node host satisfying its unchanged engine requirements. Python is selected only after the **entire selected package set** resolves to compatible binary wheels. Unavailable private previews are never invented, and a failed experimental install is not silently switched to an older stable runtime.
 
-**Built-in guidance** explains the completed report immediately, using local rules. It needs no account, API key, model download or coding. It labels observed outcomes and review needs; it never applies a repair automatically.
+WinGet follows each tool's configured catalog/channel, which can lag its publisher. Installing software is separate from account entitlement, desktop behavior, cloud authorization and a real model request.
+
+</details>
+
+**Preserve what you already use.** Original programs, project environments, browser profiles, credentials, Codex history and provider routes are retained. Supported editor migration copies missing settings and default-profile extension IDs; conflicts remain for review. Cleanup removes only unused generations owned by Workbench. [Migration reconciliation](MIGRATION.md) explains the recovered Namu AI Edge, Device Manager and audit sources retained as inert archives.
+
+## Understand the report without setup
+
+**Built-in guidance** explains recorded outcomes with local rules. It needs no account, API key, model download or coding, and never applies a repair automatically.
 
 <details>
 <summary><strong>See built-in report guidance</strong></summary>
 
-![Built-in guidance explaining a completed simulated report without account setup](docs/assets/guidance.jpg)
+![Built-in guidance explaining a completed simulated report without an account or API key](docs/assets/guidance.jpg)
 
 </details>
 
-Optional cloud AI supports **Groq, Google Gemini and OpenRouter**, selected from [public-apis](https://github.com/public-apis/public-apis#machine-learning) and checked against official free-access terms. Connect a provider key through the dashboard; it stays in memory for that session. Preview the exact curated summary and explicitly approve sending it. Free tiers have limits, and Gemini requires a project without linked billing. These connections are optional; installation works without them. [AI assistance guide](docs/AI-ASSIST.md).
+Optional cloud explanations support **Groq, Google Gemini and OpenRouter**, selected from [public-apis](https://github.com/public-apis/public-apis#machine-learning) and checked against official free-access terms. A connected key stays in session memory. Preview the exact curated summary and explicitly approve sending it; no automatic model call occurs. Free tiers have limits, and Gemini requires a project without linked billing. [AI assistance guide](docs/AI-ASSIST.md).
 
-## Reports you can audit
+## Evidence stays close
 
-Reports stay on your computer:
+Every run records selected and observed versions, command exits, update provenance, warnings and verification limits. Completed reports are kept locally:
 
 ```text
 %LOCALAPPDATA%\OpenAI-Edge-Workbench\reports\<run-id>\
 ```
 
-Each run records selected and observed versions, command exits, update provenance, warnings and verification limits. Use **Copy report** or inspect completed runs in Feature Studio. Exporting creates a local download; nothing is uploaded automatically. Review redaction before sharing. Keep authentication files, private backups and `local-session.json` private.
+Use **Copy report**, review completed history, or export a local download. Nothing is uploaded automatically. Review redaction before sharing; keep authentication files, private backups and `local-session.json` private.
 
-`VERIFIED` applies to the specific recorded check. `CATALOG_CURRENT`, `REVIEW_NEEDED`, failures and simulated results remain distinct. Installation, desktop behavior, cloud authorization and a real model request are separate evidence. [The verification record](source/VERIFICATION.md) distinguishes automated tests from actual Windows observations.
-
-## Built for review
-
-```text
-source/                 Standard-library engine, protected API, dashboard and tests
-docs/                   Feature guide, catalog, architecture and roadmap status
-tools/                  Deterministic release build and distribution verifiers
-.github/                Windows/Linux checks and contribution templates
-legacy/                 Byte-preserved historical sources; never executed by setup
-Setup.ps1 / Run.ps1      Verified updater and graphical first launch
-release.json            SHA-256 correspondence with every embedded source file
-```
-
-The dashboard binds to loopback only. API calls require a per-session capability and exact Host; writes also require the same origin. It accepts registered actions and validated selections, with no arbitrary shell command, path or download-URL interface. Dependencies for user workloads live in managed environments; the dashboard itself uses Python's standard library and plain HTML/CSS/JavaScript.
-
-[Architecture](docs/ARCHITECTURE.md) · [Development](docs/DEVELOPMENT.md) · [Handoff reconciliation](docs/HANDOFF-RECONCILIATION.md) · [Security policy](SECURITY.md) · [Changelog](CHANGELOG.md) · [Publisher references](source/SOURCES.md) · [Researched alternatives](ALTERNATIVES.md)
-
-## The complete language atlas
-
-A separate, playful [language-stat experiment](language-stat-experiment/README.md) represents **all 836 entries** in a pinned GitHub Linguist catalog, including uncommon languages and data formats. Each has a detailed reference record with its identifiers, recognition rules, aliases, file conventions and statistical group. The [searchable atlas](https://namdev90.github.io/openai-edge-workbench/) and [full catalog](language-stat-experiment/catalog.json) keep every entry visible individually. You can also download the [standalone HTML](language-stat-experiment/index.html) and open it locally.
+`VERIFIED` means the **specific recorded check** passed. `CATALOG_CURRENT`, `REVIEW_NEEDED`, failures and simulation remain distinct. [The verification record](source/VERIFICATION.md) separates automated tests from actual Windows observations.
 
 <details>
-<summary><strong>Open the complete atlas — every language, no “Other” bucket</strong></summary>
+<summary><strong>Security boundaries and source layout</strong></summary>
 
-![Complete atlas of all 836 GitHub Linguist catalog entries](language-stat-experiment/atlas.svg)
+The dashboard binds to loopback only. API calls require a per-session capability and exact Host; writes also require the same origin. Registered actions and validated selections replace arbitrary shell, path or download-URL interfaces. The dashboard itself uses Python's standard library and plain HTML/CSS/JavaScript; workload dependencies live in managed environments.
+
+```text
+source/                 Engine, protected local API, dashboard and tests
+docs/                   Guides, feature catalog, architecture and roadmap status
+tools/                  Deterministic release build and distribution verifiers
+.github/                Windows/Linux checks and contribution templates
+legacy/                 Preserved historical sources; never executed by setup
+Setup.ps1 / Run.ps1      Verified updater and graphical first launch
+release.json            SHA-256 correspondence with embedded source files
+```
+
+[Architecture](docs/ARCHITECTURE.md) · [Development](docs/DEVELOPMENT.md) · [Security policy](SECURITY.md) · [Publisher references](source/SOURCES.md) · [Handoff reconciliation](docs/HANDOFF-RECONCILIATION.md)
 
 </details>
 
-The repository deliberately classifies those reference records through documented Linguist overrides, so its native language percentages include this experiment. These are original metadata fixtures, not working implementations in 836 languages. GitHub combines related entries into parent groups and controls its own chart; the atlas displays every catalog entry separately. The experiment lives outside the installer and adds no runtimes or tool dependencies.
+## A complete language atlas
 
-## Contributing and support
+A separate [language-stat experiment](language-stat-experiment/README.md) represents **all 836 entries** in a pinned GitHub Linguist catalog, including uncommon languages and data formats. Detailed reference records cover identifiers, recognition rules, aliases, file conventions and statistical groups.
 
-Use the [issue templates](https://github.com/Namdev90/openai-edge-workbench/issues/new/choose) for a redacted bug report or a concrete feature request. Read [CONTRIBUTING.md](CONTRIBUTING.md) before adding an adapter. Report security issues [privately](https://github.com/Namdev90/openai-edge-workbench/security/advisories/new).
+[**Explore the searchable atlas**](https://namdev90.github.io/openai-edge-workbench/) · [Full catalog](language-stat-experiment/catalog.json) · [Standalone HTML](language-stat-experiment/index.html)
+
+<details>
+<summary><strong>View every catalog entry individually</strong></summary>
+
+![Complete atlas of all 836 entries in the pinned GitHub Linguist catalog](language-stat-experiment/atlas.svg)
+
+</details>
+
+These are **original metadata fixtures, not working implementations in 836 languages**. Documented Linguist overrides deliberately include them in native repository statistics. GitHub groups related entries and controls its chart; the atlas displays every entry separately. The experiment stays outside the installer and adds no runtimes or tool dependencies.
+
+## Project and support
+
+**Namu AI Workbench** is an independent community utility, previously presented as OpenAI Edge Workbench. It is separate from AMReye.AI and is not an OpenAI product. Existing launcher names and installation paths remain compatible.
+
+Use the [issue templates](https://github.com/Namdev90/openai-edge-workbench/issues/new/choose) for a redacted bug report or concrete feature request. Read [CONTRIBUTING.md](CONTRIBUTING.md) before adding an adapter, and report security issues [privately](https://github.com/Namdev90/openai-edge-workbench/security/advisories/new).
+
+[Changelog](CHANGELOG.md) · [Visual identity](docs/BRAND.md) · [Researched alternatives](ALTERNATIVES.md)
 
 No project license has been selected. Third-party tools retain their publisher terms; this repository does not grant rights to redistribute them.

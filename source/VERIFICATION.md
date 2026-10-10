@@ -1,6 +1,14 @@
 # Verification record
 
-Build: Namu AI Workbench 3.0.0-preview.3, 10 October 2026.
+Build: Namu AI Workbench 3.0.0-preview.4, 11 October 2026.
+
+## Preview.4 shared visual identity
+
+The repository artwork, dashboard and language-atlas frame now share a midnight-blue, cyan and violet palette. The dashboard retains its original controls, all 92 element IDs, eight named selections and unchanged JavaScript. The atlas retains its catalog, fixtures and official language colors. Original local SVGs and system fonts add no external application dependency.
+
+Chromium checks exercised keyboard and pointer switches, search/category/saved filters, keyboard palette execution and explicit profile application without starting installation. The 390-pixel layout at 125% text had no horizontal page overflow. Forced-colors emulation restored native checkbox appearance and removed decorative thumbs; reduced-motion emulation removed transitions. An isolated simulation completed all 30 selected operations with model requests off, and built-in guidance correctly labeled the simulated report. No browser warnings or errors were recorded. Refreshed screenshots demonstrate the interface, not a new real toolkit installation.
+
+All 282 application tests ran successfully on Windows, with the existing three symlink-privilege skips. Independent Astra review found no release blockers. The 21st review returned 53 informational hardcoded-color suggestions and no automatic changes; the shared palette and material shading were checked directly instead.
 
 ## Preview.3 interface verification
 

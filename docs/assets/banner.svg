@@ -1,16 +1,43 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="340" viewBox="0 0 1280 340" role="img" aria-labelledby="title desc">
-<title id="title">Namu AI Workbench</title><desc id="desc">Experimental tools. Visible evidence. A local Windows workspace.</desc>
-<defs><linearGradient id="bg" x2="1" y2=".6"><stop stop-color="#08131d"/><stop offset="1" stop-color="#152e3b"/></linearGradient><linearGradient id="accent"><stop stop-color="#5ee1c4"/><stop offset="1" stop-color="#71a9ee"/></linearGradient></defs>
-<rect width="1280" height="340" rx="24" fill="url(#bg)"/>
-<g fill="none" stroke="#3e7780" stroke-opacity=".3"><path d="M850 0v340M930 0v340M1010 0v340M1090 0v340M1170 0v340M810 60h470M810 140h470M810 220h470M810 300h470"/><circle cx="1080" cy="169" r="124"/><circle cx="1080" cy="169" r="93"/><circle cx="1080" cy="169" r="62"/></g>
-<rect x="48" y="43" width="54" height="54" rx="16" fill="#173a42" stroke="#4ba99e"/>
-<text x="75" y="80" text-anchor="middle" fill="#64e2c8" font-family="Segoe UI,Arial,sans-serif" font-size="32" font-weight="700">N</text>
-<text x="120" y="65" fill="#99b5c4" font-family="Segoe UI,Arial,sans-serif" font-size="12" letter-spacing="3">THE LOCAL TOOLING WORKSPACE</text>
-<text x="120" y="90" fill="#e5f0f7" font-family="Segoe UI,Arial,sans-serif" font-size="18">Independent. Inspectable. Windows.</text>
-<text x="48" y="177" fill="#eaf4fa" font-family="Segoe UI,Arial,sans-serif" font-size="54" font-weight="700">Namu AI Workbench</text>
-<text x="48" y="222" fill="url(#accent)" font-family="Segoe UI,Arial,sans-serif" font-size="27" font-weight="600">Experimental tools. Visible evidence.</text>
-<rect x="48" y="259" width="170" height="34" rx="17" fill="#154037" stroke="#367b68"/><text x="133" y="281" text-anchor="middle" fill="#83ebd4" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="1">100 STUDIO ACTIONS</text>
-<text x="237" y="281" fill="#aec3d1" font-family="Segoe UI,Arial,sans-serif" font-size="14">Official previews · Compatible runtimes · Local reports</text>
-<g fill="#73ddd0"><circle cx="1080" cy="45" r="5"/><circle cx="956" cy="169" r="5"/><circle cx="1162" cy="237" r="5"/></g><circle cx="1148" cy="99" r="5" fill="#83a9e7"/>
-<path d="M1056 188v-40l48 40v-40" fill="none" stroke="url(#accent)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="354" viewBox="0 0 1280 354" role="img" aria-labelledby="title description">
+  <title id="title">Namu AI Workbench</title>
+  <desc id="description">Experimental tools. Visible evidence. A midnight-blue local Windows console with 100 Feature Studio actions, official preview channels and local reports.</desc>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#070B18"/><stop offset="1" stop-color="#0E1730"/></linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#172544"/><stop offset=".47" stop-color="#0E1730"/><stop offset="1" stop-color="#070B18"/></linearGradient>
+    <linearGradient id="signal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6EE7FF"/><stop offset="1" stop-color="#AD92FF"/></linearGradient>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#A7B4D4" stroke-opacity=".07" stroke-width="1"/></pattern>
+    <clipPath id="shell"><rect x="1" y="1" width="1278" height="352" rx="26"/></clipPath>
+  </defs>
+  <rect x="1" y="1" width="1278" height="352" rx="26" fill="url(#body)" stroke="#172544" stroke-width="2"/>
+  <g clip-path="url(#shell)">
+    <rect x="802" y="1" width="477" height="269" fill="url(#grid)"/>
+    <path d="M811 33H1222V255H811M784 74H925M784 231H925M1172 74H1235M1172 231H1235" fill="none" stroke="#6EE7FF" stroke-opacity=".12"/>
+    <path d="M49 1H737L773 37H1254" fill="none" stroke="#6EE7FF" stroke-opacity=".26"/>
+    <path d="M816 254H890L917 227H968M1139 100H1184L1212 128H1279" fill="none" stroke="#AD92FF" stroke-opacity=".45"/>
+    <g fill="#A7B4D4" fill-opacity=".13"><circle cx="17" cy="17" r="3"/><circle cx="1263" cy="17" r="3"/><circle cx="17" cy="337" r="3"/><circle cx="1263" cy="337" r="3"/></g>
+    <rect x="44" y="35" width="54" height="54" rx="14" fill="url(#metal)" stroke="#6EE7FF" stroke-opacity=".55"/>
+    <path d="M60 75V49L82 75V49" fill="none" stroke="url(#signal)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="113" y="55" fill="#A7B4D4" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="600" letter-spacing="3">NAMU / LOCAL INSTRUMENTS</text>
+    <text x="113" y="79" fill="#E8EEFF" font-family="Segoe UI,Arial,sans-serif" font-size="16">Independent community utility · Windows</text>
+    <text x="44" y="157" fill="#E8EEFF" font-family="Segoe UI,Arial,sans-serif" font-size="57" font-weight="700" letter-spacing="-1.5">Namu AI Workbench</text>
+    <text x="46" y="204" fill="#6EE7FF" font-family="Segoe UI,Arial,sans-serif" font-size="26" font-weight="500">Experimental tools. Visible evidence.</text>
+    <text x="47" y="241" fill="#A7B4D4" font-family="Segoe UI,Arial,sans-serif" font-size="16">Install · inspect · understand · plan</text>
+    <g transform="translate(1050 152)">
+      <circle r="113" fill="#070B18" fill-opacity=".55" stroke="#172544" stroke-width="12"/>
+      <circle r="113" fill="none" stroke="#A7B4D4" stroke-opacity=".2"/>
+      <circle r="100" fill="none" stroke="#6EE7FF" stroke-opacity=".45" stroke-dasharray="113 14 3 14 60 178" transform="rotate(-43)"/>
+      <circle r="82" fill="url(#metal)" stroke="#AD92FF" stroke-opacity=".35"/>
+      <circle r="67" fill="#070B18" stroke="#6EE7FF" stroke-opacity=".13"/>
+      <path d="M-37 27V-27L37 27V-27" fill="none" stroke="url(#signal)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M-125 0H-112M112 0H125M0-125V-112M0 112V125" stroke="#A7B4D4" stroke-opacity=".5"/>
+      <circle cx="71" cy="-70" r="5" fill="#6EE7FF"/><circle cx="-87" cy="49" r="4" fill="#AD92FF"/>
+    </g>
+    <rect x="44" y="275" width="1192" height="44" rx="10" fill="url(#metal)" stroke="#172544"/>
+    <circle cx="64" cy="297" r="4" fill="#86EFCA"/>
+    <text x="79" y="302" fill="#E8EEFF" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="600" letter-spacing="1.7">100 STUDIO ACTIONS</text>
+    <path d="M274 288V306M538 288V306M801 288V306" stroke="#A7B4D4" stroke-opacity=".18"/>
+    <text x="298" y="302" fill="#A7B4D4" font-family="Segoe UI,Arial,sans-serif" font-size="12" letter-spacing="1.5">OFFICIAL PREVIEW CHANNELS</text>
+    <text x="562" y="302" fill="#A7B4D4" font-family="Segoe UI,Arial,sans-serif" font-size="12" letter-spacing="1.5">COMPATIBLE RUNTIMES</text>
+    <text x="825" y="302" fill="#A7B4D4" font-family="Segoe UI,Arial,sans-serif" font-size="12" letter-spacing="1.5">LOCAL, AUDITABLE REPORTS</text>
+  </g>
 </svg>

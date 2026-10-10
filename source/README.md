@@ -1,4 +1,4 @@
-# Namu AI Workbench 3.0.0-preview.3
+# Namu AI Workbench 3.0.0-preview.4
 
 Independent, unsigned Windows maintenance utility generated for Namu. It is not an OpenAI product.
 

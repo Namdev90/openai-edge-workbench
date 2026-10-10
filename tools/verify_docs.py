@@ -18,7 +18,7 @@ if __name__=='__main__':
     proposal=(ROOT/'FEATURE-PROPOSALS.md').read_text(encoding='utf-8')
     ids=re.findall(r'^\| (F\d{3}) \|',proposal,re.M)
     assert ids==[f'F{i:03}' for i in range(1,101)],'Roadmap IDs were lost or conflated with the implemented catalog.'
-    ET.parse(ROOT/'docs/assets/banner.svg')
+    for path in (ROOT/'docs/assets').glob('*.svg'):ET.parse(path)
     for path in (ROOT/'docs/assets').glob('*.png'):assert path.read_bytes().startswith(b'\x89PNG\r\n\x1a\n'),f'Invalid screenshot: {path.name}'
     for path in (ROOT/'docs/assets').glob('*.jpg'):
         data=path.read_bytes()

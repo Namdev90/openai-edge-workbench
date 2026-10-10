@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="246" viewBox="0 0 1280 246" role="img" aria-labelledby="title description">
+  <title id="title">Feature Studio: 100 registered actions</title>
+  <desc id="description">30 read-only diagnostics, 35 report analyses, 25 planning and export actions and 10 browser controls. These are distinct features, not 100 software installers.</desc>
+  <defs>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#172544"/><stop offset=".18" stop-color="#0E1730"/><stop offset="1" stop-color="#070B18"/></linearGradient>
+  </defs>
+  <rect width="1280" height="246" rx="20" fill="#070B18"/>
+  <text x="25" y="31" fill="#A7B4D4" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="600" letter-spacing="2.1">FEATURE STUDIO / 100 REGISTERED ACTIONS</text>
+  <g font-family="Segoe UI,Arial,sans-serif">
+    <g transform="translate(24 49)">
+      <rect width="294" height="163" rx="14" fill="url(#panel)" stroke="#172544"/>
+      <path d="M22 0H72" stroke="#6EE7FF" stroke-width="2"/>
+      <text x="21" y="47" fill="#6EE7FF" font-size="34" font-weight="700">30</text>
+      <text x="83" y="45" fill="#A7B4D4" font-size="12" letter-spacing="1.3">DIAGNOSTICS</text>
+      <text x="22" y="84" fill="#E8EEFF" font-size="24" font-weight="600">Inspect</text>
+      <text x="22" y="113" fill="#A7B4D4" font-size="14">Resources · routing · provenance</text>
+      <text x="22" y="136" fill="#A7B4D4" font-size="14">Read-only checks, on demand</text>
+    </g>
+    <g transform="translate(337 49)">
+      <rect width="294" height="163" rx="14" fill="url(#panel)" stroke="#172544"/>
+      <path d="M22 0H72" stroke="#AD92FF" stroke-width="2"/>
+      <text x="21" y="47" fill="#AD92FF" font-size="34" font-weight="700">35</text>
+      <text x="83" y="45" fill="#A7B4D4" font-size="12" letter-spacing="1.3">REPORT ANALYSES</text>
+      <text x="22" y="84" fill="#E8EEFF" font-size="24" font-weight="600">Understand</text>
+      <text x="22" y="113" fill="#A7B4D4" font-size="14">Warnings · history · migration</text>
+      <text x="22" y="136" fill="#A7B4D4" font-size="14">Recorded outcomes, explained</text>
+    </g>
+    <g transform="translate(650 49)">
+      <rect width="294" height="163" rx="14" fill="url(#panel)" stroke="#172544"/>
+      <path d="M22 0H72" stroke="#6EE7FF" stroke-width="2"/>
+      <text x="21" y="47" fill="#6EE7FF" font-size="34" font-weight="700">25</text>
+      <text x="83" y="45" fill="#A7B4D4" font-size="12" letter-spacing="1.3">PLANNING / EXPORT</text>
+      <text x="22" y="84" fill="#E8EEFF" font-size="24" font-weight="600">Plan &amp; export</text>
+      <text x="22" y="113" fill="#A7B4D4" font-size="14">Profiles · recipes · local files</text>
+      <text x="22" y="136" fill="#A7B4D4" font-size="14">Review before applying a plan</text>
+    </g>
+    <g transform="translate(963 49)">
+      <rect width="294" height="163" rx="14" fill="url(#panel)" stroke="#172544"/>
+      <path d="M22 0H72" stroke="#86EFCA" stroke-width="2"/>
+      <text x="21" y="47" fill="#86EFCA" font-size="34" font-weight="700">10</text>
+      <text x="83" y="45" fill="#A7B4D4" font-size="12" letter-spacing="1.3">BROWSER CONTROLS</text>
+      <text x="22" y="84" fill="#E8EEFF" font-size="24" font-weight="600">Make it yours</text>
+      <text x="22" y="113" fill="#A7B4D4" font-size="14">Search · favorites · accessibility</text>
+      <text x="22" y="136" fill="#A7B4D4" font-size="14">A workspace that fits your view</text>
+    </g>
+  </g>
+  <text x="25" y="232" fill="#A7B4D4" font-family="Segoe UI,Arial,sans-serif" font-size="12">Distinct diagnostics, analyses, presets and controls — not 100 software installers.</text>
+</svg>
