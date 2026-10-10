@@ -49,4 +49,6 @@ Application regression tests and 22 setup/security tests cover Windows PowerShel
 
 See [FEATURES.md](FEATURES.md) for the exact legacy feature reconciliation and [ALTERNATIVES.md](ALTERNATIVES.md) for researched alternatives.
 
+[100 new capability proposals](FEATURE-PROPOSALS.md) provides a prioritized roadmap with current gaps, acceptance criteria and dependencies. It is a documentation proposal, not an implemented feature list or an automatic implementation trigger.
+
 Version 2.0.4 keeps structured Codex doctor warnings/failures visible, including their individual details and remediation. Successful installation or doctor process exit does not hide degraded optional MCP configuration, security observations or history-index warnings. Security exclusions and history databases are not modified automatically.
