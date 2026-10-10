@@ -128,7 +128,7 @@
         }
       ],
       "eligibleForDeletion": true,
-      "cleanup": "pending independent live-head check"
+      "cleanup": "deleted with exact-head lease after archive verification"
     },
     {
       "branch": "openai-device-manager",
@@ -1404,8 +1404,11 @@
         }
       ],
       "eligibleForDeletion": false,
-      "cleanup": "pending independent live-head check"
+      "cleanup": "original tip restored with exact-head lease; preserved because unique history contains unrelated application deletions"
     }
   ],
-  "browserWorkbenchRecoveredFromCommit": "44c3c10b7332341d1a57d486be80bfce9acd47ea"
+  "browserWorkbenchRecoveredFromCommit": "44c3c10b7332341d1a57d486be80bfce9acd47ea",
+  "verifiedDestinationCommit": "b27d173bcaf6759f06cf4a03b14fc3b703145f01",
+  "mainAfter": "6e9b0ab6b7d60e3721340ab63dc66b3b84240ece",
+  "mainUnchanged": true
 }

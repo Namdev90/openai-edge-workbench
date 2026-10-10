@@ -28,8 +28,8 @@ The report records selected/observed versions, exits, failures, model checks and
 
 [source/](source/) contains every embedded application file. [release.json](release.json) and [tools/verify_payload.py](tools/verify_payload.py) verify exact byte correspondence, including tests. No source-byte exception is used. [tools/build_release.py](tools/build_release.py) rebuilds the deterministic launcher after edits.
 
-The reviewed build passes 48 application tests and 11 setup/security tests in Windows PowerShell 5.1 and PowerShell 7. The actual CMD extraction and bootstrap were exercised in NoLaunch mode on Windows, with an existing Python, without installing toolkit apps or making model requests. CI repeats application/distribution checks on Windows and Linux, plus the Windows bootstrap smoke test. This does not certify a complete laptop installation; the installation report is still required.
+The reviewed build passes 48 application tests and 12 setup/security tests in Windows PowerShell 5.1 and PowerShell 7. The actual CMD extraction and bootstrap were exercised in NoLaunch mode on Windows, with an existing Python, without installing toolkit apps or making model requests. CI repeats application/distribution checks on Windows and Linux, plus the Windows bootstrap smoke test. This does not certify a complete laptop installation; the installation report is still required.
 
 [MIGRATION.md](MIGRATION.md) and [migration-audit.json](migration-audit.json) document exact historical archives, branch cleanup conditions and verification. Historical files in legacy/ are inert references and are not executed by the active setup.
 
-[Detailed scope](source/README.md) · [Verification record](source/VERIFICATION.md) · [Official publisher references](source/SOURCES.md).
+[Detailed scope](source/README.md) Â· [Verification record](source/VERIFICATION.md) Â· [Official publisher references](source/SOURCES.md).

@@ -23,6 +23,6 @@ The generated utility includes bounded runtime checks and partial reports for th
 
 ## Standalone review, 10 October 2026
 
-The reviewed 2.0.1-preview.1 build passed 48 application regression tests on the local Windows machine, including real junction fixtures and failed candidate preservation. Eleven setup/payload tests passed under Windows PowerShell 5.1 and PowerShell 7. Embedded source is regenerated from readable files and checked byte-for-byte without a portability exception. PowerShell bootstrap and extraction are also exercised with NoLaunch, using an existing Python, without installing toolkit applications or making model calls.
+The reviewed 2.0.1-preview.1 build passed 48 application regression tests on the local Windows machine, including real junction fixtures and failed candidate preservation. Twelve setup/payload tests passed under Windows PowerShell 5.1 and PowerShell 7. Embedded source is regenerated from readable files and checked byte-for-byte without a portability exception. PowerShell bootstrap and extraction are also exercised with NoLaunch, using an existing Python, without installing toolkit applications or making model calls.
 
 Earlier verification above describes the original 2.0.0 build. Full package installation, user migrations, Store/UAC interactions, authenticated model access and complete cloud connections remain unverified until the actual installation report is reviewed.

@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "version": "2.0.1-preview.1",
-  "launcherSha256": "6f838592c4e2f9f1a5d9642e5e742d42d8fb199fc8fa0597ed0cd32ef0870deb",
-  "payloadSha256": "276cfaf04f5c2cd5a3b12b9b7a2c9f95f71f5b7b98961aa693e4013f8e170f2f",
+  "launcherSha256": "732fda15ed663329c30bac26e3a574598bdd72fceabe1b9539548f7126a98067",
+  "payloadSha256": "45f7d90dc9d912bd1301a4b3e5d1677bd810e8557e828268d973678d58a37ec6",
   "setupSha256": "791ddd5f0a16a2f577b211b1b9449ff66ab87d4728767496ba79b751d9efc9aa",
   "sourceFiles": {
     "app.js": "de0cc9533089a4621a737c62d907ecc15993a7408b3f0f691cc5d879dedb4cd1",
@@ -20,6 +20,6 @@
     "tests/test_engine.py": "11ea9a124ddc07514d4a488aadfae4fbc6223864c279f3a8739ed94f158de6fa",
     "tests/test_migration_security.py": "5f08818c4a5502a4c8f94ea79c253ec4c351f3b81fac8e9b183bff7d56c8656f",
     "tests/test_regressions.py": "56455074d21ebab873ff94fffadae8d756272c97a19ca74110b09e05e19541a8",
-    "VERIFICATION.md": "fff14538f391fd39428bba6c7e626ed0c0e64081b835211f2ea2fcec5eed3b01"
+    "VERIFICATION.md": "337036dacd2160ef43f0bd21bfda1d2276030a126bbc0acaabeeb3ab4a10f358"
   }
 }

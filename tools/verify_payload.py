@@ -20,3 +20,10 @@ with ZipFile(io.BytesIO(data)) as z:
         assert z.read(name)==(root/'source'/name).read_bytes(),'Source differs: '+name
         assert sha256(z.read(name)).hexdigest()==manifest['sourceFiles'][name]
 print(f'{len(manifest["sourceFiles"])} embedded source files verified byte-for-byte.')
+first=root/'OpenAI-Edge-Workbench-Setup.cmd'
+if first.exists():
+    line=next(s for s in first.read_text().splitlines() if '-EncodedCommand ' in s)
+    decoded=base64.b64decode(line.split('-EncodedCommand ',1)[1]).decode('utf-16le')
+    assert decoded==(root/'tools/first-stage.ps1').read_text(),'Setup CMD differs from readable first-stage source'
+    assert len(line)<8191,'CMD command line too long'
+    print('Setup CMD matches readable commit-pinned first-stage source.')

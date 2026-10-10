@@ -37,3 +37,5 @@ jobs:
           $env:EDGE_NO_LAUNCH='1'
           & ./OpenAI-Edge-Workbench.cmd
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & ./OpenAI-Edge-Workbench-Setup.cmd
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
