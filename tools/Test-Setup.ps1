@@ -44,7 +44,7 @@ try{
  Assert ((Get-Content (Join-Path $tmp 'download') -Raw) -eq 'abc') 'private GitHub contents decoding preserves bytes'
  function Get-SetupJson([string]$Endpoint){return [pscustomobject]@{type='file';encoding='base64';size=4;content='YWJj'}}
  Throws {Get-SetupDownload 'file.ps1' ('a'*40) (Join-Path $tmp 'download')} 'download size mismatch rejected'
- foreach($path in @('Setup.ps1','source/bootstrap.ps1','tools/launcher-loader.ps1')){
+ foreach($path in @('Setup.ps1','Run.ps1','source/bootstrap.ps1','tools/launcher-loader.ps1')){
   $tokens=$null;$errors=$null;[void][Management.Automation.Language.Parser]::ParseFile((Join-Path $repoRoot $path),[ref]$tokens,[ref]$errors)
   Assert ($errors.Count -eq 0) "$path parses"
  }

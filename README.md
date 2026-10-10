@@ -4,6 +4,15 @@ Unofficial one-click Windows installer/updater with a browser dashboard, selecta
 
 ## Install
 
+Short graphical launch in ordinary Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/Namdev90/openai-edge-workbench/main/Run.ps1 | iex
+```
+
+Every tool pack is selected initially; edit choices during the dashboard countdown. The short launcher trusts current GitHub code; SETUP.md also provides the pinned, independently checksum-verified first-download command.
+
+
 Download the setup launcher from Releases and double-click it, or use the exact PowerShell command in [SETUP.md](SETUP.md). Setup pins the initial downloader to a reviewed commit and verifies SHA256 before execution. The updater resolves one current main commit, validates the complete launcher and embedded source, runs offline tests, and opens the dashboard.
 
 The dashboard starts after a visible 12-second countdown. Changing selections pauses that countdown. Public nightly/alpha/beta/Insiders/Canary channels are selected where supported. The optional live Codex request uses model quota or API billing; disable it in the dashboard if desired. Windows package installation approvals and account sign-in may require your input.
@@ -37,3 +46,5 @@ Application regression tests and 22 setup/security tests cover Windows PowerShel
 [MIGRATION.md](MIGRATION.md) and [migration-audit.json](migration-audit.json) document exact historical archives, branch cleanup conditions and verification. Historical files in legacy/ are inert references and are not executed by the active setup.
 
 [Detailed scope](source/README.md) Â· [Verification record](source/VERIFICATION.md) Â· [Official publisher references](source/SOURCES.md).
+
+See [FEATURES.md](FEATURES.md) for the exact legacy feature reconciliation and [ALTERNATIVES.md](ALTERNATIVES.md) for researched alternatives.

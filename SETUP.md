@@ -1,5 +1,15 @@
 # Verified setup
 
+## Short graphical launch
+
+For the Chris Titus-style launch, paste this into ordinary Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/Namdev90/openai-edge-workbench/main/Run.ps1 | iex
+```
+
+Run.ps1 displays setup progress, selects every tool pack, verifies the commit-pinned downstream downloader, and opens the graphical dashboard. It does not exit your parent shell. This short form trusts the current GitHub launcher before execution. The longer command below also independently pins and verifies the initial script. Both use the same application updater and retain GitHub CLI authentication for private downstream reads. A private repository still requires the authenticated command below to retrieve the first script.
+
 ## Current public repository
 
 Paste this single line into Windows PowerShell as your normal user:
