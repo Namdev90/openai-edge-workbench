@@ -92,6 +92,13 @@ def choose_dotnet_channel(index:dict) -> str:
     return max(channels,key=lambda x:tuple(map(int,x['channel-version'].split('.'))))['channel-version']
 
 
+def dotnet_sdk_version(output:str,channel:str) -> str:
+    versions=[line.strip() for line in output.splitlines() if SEMVER.fullmatch(line.strip())]
+    if len(versions)!=1 or not versions[0].startswith(channel+'.') or SEMVER.fullmatch(versions[0])[4] is None:
+        raise OperationError('Exact selected-channel .NET development SDK execution was not verified; previous SDK remains selected.')
+    return versions[0]
+
+
 def python_key(text: str) -> tuple:
     m = PYVER.fullmatch(text)
     if not m:
@@ -1333,11 +1340,14 @@ class Workbench:
         if signed.get('Status')!='Valid' or 'Microsoft' not in signed.get('Subject',''):
             raise OperationError('Daily SDK installer signature could not be verified as Microsoft. Script not executed.')
         target=self.root/'runtimes/dotnet'/channel
+        assert_regular_path(target)
         body='& '+ps_literal(script)+' -Channel '+ps_literal(channel)+' -Quality daily -Architecture '+ps_literal((getattr(self,'arch',None) or architecture()))+' -InstallDir '+ps_literal(target)+' -NoPath; if(-not $?) {exit 1}'
         self.require(self.run_command(self.ps_args(body),timeout=1800,label='Install .NET daily SDK from discovered preview channel '+channel),'.NET daily SDK')
         exe=target/'dotnet.exe'
-        check=self.require(self.run_command([exe,'--version'],timeout=60,label='Verify .NET SDK executable'),'.NET SDK startup')
-        self.activate('dotnet',check.out.strip(),[exe],'Microsoft dotnet-install -Quality daily / '+channel)
+        env={**self.env,'DOTNET_CLI_HOME':str(self.root/'workspace/dotnet-home'),'DOTNET_CLI_TELEMETRY_OPTOUT':'1','DOTNET_SKIP_FIRST_TIME_EXPERIENCE':'1','DOTNET_NOLOGO':'1'}
+        check=self.require(self.run_command([exe,'--version'],env=env,cwd=target,timeout=60,label='Verify selected-channel .NET development SDK executable'),'.NET SDK startup')
+        version=dotnet_sdk_version(check.out,channel)
+        self.activate('dotnet',version,[exe],'Microsoft dotnet-install -Quality daily / '+channel)
 
     def step_verify(self):
         checks=self.report['checks']

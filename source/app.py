@@ -44,7 +44,11 @@ def make_server(workbench:Workbench,token:str|None=None):
             if path in ('/','/app.js','/style.css'):
                 filename={'/':'index.html','/app.js':'app.js','/style.css':'style.css'}[path]
                 kind={'/':'text/html; charset=utf-8','/app.js':'text/javascript; charset=utf-8','/style.css':'text/css; charset=utf-8'}[path]
-                try:self.response(200,(ASSETS/filename).read_bytes(),kind)
+                try:
+                    content=(ASSETS/filename).read_bytes()
+                    if path=='/' and workbench.options.get('dotnet'):
+                        content=content.replace(b'name="dotnet">',b'name="dotnet" checked>')
+                    self.response(200,content,kind)
                 except OSError:self.response(500,{'error':'Dashboard asset is missing. Extract a fresh copy of the launcher.'})
             elif path=='/api/status':
                 try:after=max(0,int(urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query).get('after',['0'])[0]))
@@ -133,12 +137,14 @@ def main(argv=None):
     parser.add_argument('--root',type=Path,default=Path(os.environ.get('LOCALAPPDATA',str(Path.home())))/ROOT_NAME)
     parser.add_argument('--simulate',action='store_true',help='Explicit no-install demo; reports are labeled simulated')
     parser.add_argument('--no-browser',action='store_true')
+    parser.add_argument('--all-tools',action='store_true',help='Select every advertised tool pack, including the daily .NET SDK; choices remain editable in the dashboard.')
     args=parser.parse_args(argv);assert_regular_path(args.root);root=args.root.resolve();root.mkdir(parents=True,exist_ok=True)
     try:lock=InstanceLock(root)
     except OSError:
         if existing_window(root):return 0
         print('Another Workbench run owns the lock. Check its window before starting again.');return 2
     server=make_server(Workbench(root,simulate=args.simulate));port=server.server_address[1]
+    if args.all_tools:server.workbench.options={name:True for name in server.workbench.options}
     session=root/'local-session.json'
     atomic_json(session,{'port':port,'token':server.capability,'pid':os.getpid()})
     with contextlib.suppress(OSError):session.chmod(0o600)

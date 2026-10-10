@@ -1,24 +1,25 @@
 {
   "schema": 1,
   "version": "2.0.3-preview.1",
-  "launcherSha256": "cd01f2a5393f18d633e399bba351d057080b57a478d0848a14de89caee40162a",
-  "payloadSha256": "36a69744ff4251d048b1abd38f90d98648e5df2cfd5140f727f9060a2310db3f",
+  "launcherSha256": "de86fd9439e8ca07a8df69b1dcfa7cf54fa0641a3a708a15709e709b817109fb",
+  "payloadSha256": "848b834b5b009369b1ea114bc131d2ab9a280d2deedb56f89a9f02d1d9ed5f9f",
   "setupSha256": "2360295d3d44f19d5e39ea2f48a774833720ca4d26f9b1ccb1a86c25540cdd04",
   "setupLauncherSha256": "e865b06f13db32de9401d31c79ab1ee508550f99c036ad20093f47179c4e919a",
   "sourceFiles": {
     "app.js": "ba7345a3d9dfdc3f0e9972e32f92eaa271e1c6577a06bd1456ad9739c4602c43",
-    "app.py": "8e307098f0dcaed20cace8b0d29afc76889a6f435189a04e81fbeea220e35caa",
-    "bootstrap.ps1": "3898bbab15005f14d77b32f65283a3b6119d02f48d3cae537511c05526742a3f",
+    "app.py": "b0e257f84ad9e83a0ca651de8fa415e1c9d5b7a16b3457d1f749dd101586a476",
+    "bootstrap.ps1": "5fa20aeba6ecd8edb6e27e95469b6cb37c3d0f035189d0052fc57c6db8936d57",
     "docs/DESIGN.md": "56a3d0c02f1f493a28a458ea24ed1df6763e826b2e5c68374de58ab826b2fbce",
     "docs/PLAN.md": "97c8989684525794c32f92b857565a975ba6e8c6dae91dc5c26e1d663f0b9261",
-    "engine.py": "a97c74e4ed29dd30b495dcf9a4ebcf58b5db9e0759f0918c1a5809a1782c5c39",
+    "engine.py": "19ae1a1651db3e4b32b1f65a05407059c4d017eb76cea67fe17764e4f1a79149",
     "index.html": "fa2e8a55751d4837ff986451a087c3bd54da9b9be1ad7ed595a6422cfc5ffca2",
     "README.md": "ad8b77f92b410c6da75e3242d93d79460ed8bd472df467f1ac608f1218ef26a9",
     "SOURCES.md": "0cf14777c3704c3b68c97ee35202d87e5ebdf5e8626e2246fde6811b76bfa41d",
     "style.css": "6e302db6d11f992039ba7c013c808d8bc2659d0578b41034b2ff78562e8cc03c",
     "tests/test_adapters.py": "dae68de107e9bd5c01b938f28dcd2c66e07b7329a4ddf531305d53dad8784c8c",
+    "tests/test_all_tools_launch.py": "c29680535b9169b53d7e37f369098c5e86ef6c49f1dccc399439a6d23c8ed4d2",
     "tests/test_dashboard.py": "9f4c627f5b3b06101e7325fb5820c6e59c5ec02db12bb916ec86babda5f8e3fa",
-    "tests/test_dotnet_channels.py": "6fa64335044b0473ec0c93393811521f3c8d310443c9d153402f0353774232df",
+    "tests/test_dotnet_channels.py": "def58cb166dee7c1f16728a64d6aa7538a5586b5e0c1e7176ed829de79cda44b",
     "tests/test_engine.py": "11ea9a124ddc07514d4a488aadfae4fbc6223864c279f3a8739ed94f158de6fa",
     "tests/test_migration_security.py": "5f08818c4a5502a4c8f94ea79c253ec4c351f3b81fac8e9b183bff7d56c8656f",
     "tests/test_npm_metadata.py": "0152e4112ac2850d513b5d31dc272cb5e76d854f0a73fcec93ae47cddef86550",
@@ -26,6 +27,6 @@
     "tests/test_python_compatibility.py": "7f7b6518ad818a313380a534fa2d09d72b7c5aa96b2aab814ab819e59aee6c5b",
     "tests/test_regressions.py": "56455074d21ebab873ff94fffadae8d756272c97a19ca74110b09e05e19541a8",
     "tests/test_windows_packages.py": "1529c7022d252a8ca257c94c0505f3338302de6a86231e8e6ced37c5d132709d",
-    "VERIFICATION.md": "a570770fbac72b3a77c4fa028d4b6d3995509eb0498b243d6b02f88b2cf74e25"
+    "VERIFICATION.md": "aae59369c8ea1d384943b4e9ebfd554a3c828d0c8758d33c655065664218949c"
   }
 }

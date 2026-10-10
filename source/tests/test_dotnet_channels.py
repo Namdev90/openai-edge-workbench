@@ -2,6 +2,12 @@ import unittest
 import engine
 
 class DotnetChannelTests(unittest.TestCase):
+    def test_actual_development_sdk_version_is_checked(self):
+        self.assertEqual(engine.dotnet_sdk_version('Welcome to .NET\n11.0.100-rc.2.26501.1\n','11.0'),'11.0.100-rc.2.26501.1')
+
+    def test_stable_wrong_channel_or_ambiguous_sdk_cannot_be_activated(self):
+        for output in ('11.0.100','10.0.100-rc.1','11.0.100-rc.1\n11.0.100-rc.2'):
+            with self.subTest(output=output),self.assertRaises(engine.OperationError):engine.dotnet_sdk_version(output,'11.0')
     def test_go_live_rc_is_still_a_development_channel(self):
         data={'releases-index':[{'channel-version':'11.0','support-phase':'go-live','latest-sdk':'11.0.100-rc.1.26425.128'},{'channel-version':'10.0','support-phase':'active','latest-sdk':'10.0.401'}]}
         self.assertEqual(engine.choose_dotnet_channel(data),'11.0')

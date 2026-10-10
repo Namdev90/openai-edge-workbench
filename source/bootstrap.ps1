@@ -107,7 +107,9 @@ try {
     if ($NoLaunch) { Status 'NO_LAUNCH_VERIFICATION_OK'; exit 0 }
     Status 'Opening the dashboard. Keep this launcher window open until you quit the dashboard.'
     $app = Join-Path $PSScriptRoot 'app.py'
-    & $python $app --root $Root
+    $appArgs=@('--root',$Root)
+    if($env:EDGE_ALL_TOOLS -eq '1'){$appArgs+='--all-tools'}
+    & $python $app @appArgs
     if ($LASTEXITCODE -ne 0) { throw "The dashboard stopped with exit code $LASTEXITCODE. See Bootstrap-Diagnostic.txt." }
     exit 0
 } catch {
