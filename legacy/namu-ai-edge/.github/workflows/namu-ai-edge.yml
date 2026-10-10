@@ -1,0 +1,60 @@
+name: Namu AI Edge Windows tests
+on:
+  push:
+    branches: [namu-ai-edge]
+    paths: ['tools/namu-ai-edge/**', '.github/workflows/namu-ai-edge.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  windows-tests:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: namu-ai-edge
+      - name: Apply explicit Windows PowerShell compatibility repair
+        shell: python
+        run: |
+          from pathlib import Path
+          for name in ['Edge.ps1', 'install.ps1']:
+              p = Path('tools/namu-ai-edge') / name
+              text = p.read_text(encoding='utf-8')
+              text = text.replace('[IO.File]::Replace($tmp,$Path,$null)', '[IO.File]::Replace($tmp,$Path,[NullString]::Value)')
+              text = text.replace('[IO.File]::Replace($t,$Path,$null)', '[IO.File]::Replace($t,$Path,[NullString]::Value)')
+              p.write_bytes(text.encode('utf-8'))
+      - name: Windows PowerShell 5.1 regression and GUI construction tests
+        shell: powershell
+        run: powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File tools/namu-ai-edge/tests/Test-Edge.ps1 -Gui
+      - name: PowerShell 7 regression and GUI construction tests
+        shell: pwsh
+        run: pwsh -NoProfile -STA -File tools/namu-ai-edge/tests/Test-Edge.ps1 -Gui
+      - name: Rebuild manifest and verify distribution
+        shell: pwsh
+        run: |
+          python tools/namu-ai-edge/Build-Release.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/namu-ai-edge/tests/test_distribution.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Upload tested source distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: Namu-AI-Edge-2.0.0
+          path: tools/namu-ai-edge/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Publish verified repair and manifest to tool branch only
+        shell: pwsh
+        run: |
+          git config user.name "Namu AI Edge CI"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/namu-ai-edge/Edge.ps1 tools/namu-ai-edge/install.ps1 tools/namu-ai-edge/release.json
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 1) {
+            git commit -m "fix: verified Windows PowerShell compatibility and release manifest"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            git push origin HEAD:namu-ai-edge
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+          exit 0
