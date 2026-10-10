@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "project": {
+    "name": "Namu AI Workbench",
+    "productType": "Local Windows installer and diagnostic dashboard",
+    "stack": [
+      "Python standard library",
+      "HTML",
+      "CSS",
+      "JavaScript"
+    ]
+  },
+  "sources": {
+    "tokens": [
+      "source/style.css"
+    ],
+    "components": [
+      "source/index.html",
+      "source/app.js"
+    ],
+    "assets": [
+      "docs/assets"
+    ],
+    "instructions": [
+      "source/docs/DESIGN.md"
+    ]
+  },
+  "design": {
+    "colorMode": "dark",
+    "colors": {
+      "ink": "warm off-white",
+      "surface": "graphite and brushed titanium",
+      "accent": "cyan",
+      "attention": "amber"
+    },
+    "typography": {
+      "body": "Segoe UI, Arial",
+      "readouts": "system monospace"
+    },
+    "density": "comfortable",
+    "motion": {
+      "policy": "short physical press feedback; respect reduced motion"
+    }
+  },
+  "components": {
+    "installed": [
+      "native HTML form controls",
+      "existing Feature Studio",
+      "native dialog"
+    ],
+    "preferredPrimitives": [
+      "accessible checkbox switches",
+      "real progress element",
+      "semantic status text"
+    ],
+    "patterns": [
+      "recessed readouts",
+      "machined panel edges",
+      "engraved labels",
+      "raised buttons"
+    ]
+  },
+  "constraints": {
+    "must": [
+      "Preserve setup IDs, option names, consent and local API protection",
+      "Make all functions usable by keyboard and at narrow widths",
+      "Render actual engine results; clearly label simulations",
+      "Keep assets offline and dependency-free"
+    ],
+    "avoid": [
+      "Decorative fake telemetry",
+      "External fonts or UI dependencies",
+      "Unlabeled icon-only controls",
+      "Low-contrast engraved text"
+    ]
+  },
+  "decisions": [
+    {
+      "date": "2026-10-10",
+      "decision": "User requested hyperrealistic skeuomorphism: a tactile instrument console with coherent lighting, brushed metal, recessed displays and physical switches."
+    }
+  ],
+  "evidence": [
+    {
+      "source": "21st search",
+      "query": "skeuomorphic instrument panel tactile metal switches",
+      "results": [
+        "https://21st.dev/@mengto/components/skeuomorphic-toggle",
+        "https://21st.dev/@bidyut10/components/three-d-button"
+      ],
+      "use": "Visual direction only. Existing native components are retained; no third-party component code retrieved or copied."
+    }
+  ],
+  "generatedAt": "2026-10-10T16:24:02.371Z"
+}
