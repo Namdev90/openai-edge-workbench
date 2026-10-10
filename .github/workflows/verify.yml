@@ -27,6 +27,12 @@ jobs:
         run: python tools/feature_catalog.py --check
       - name: Verify documentation and preview assets
         run: python tools/verify_docs.py
+      - name: Verify complete language catalog and fixtures
+        run: python tools/verify_language_lab.py
+      - name: Language catalog safety regressions
+        run: python -m unittest discover -s tools -p test_language_lab.py -v
+      - name: Verify generated language atlas
+        run: python tools/build_language_atlas.py --check
       - name: Windows setup and parser tests
         if: runner.os == 'Windows'
         shell: powershell
