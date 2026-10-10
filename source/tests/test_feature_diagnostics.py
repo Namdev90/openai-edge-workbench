@@ -378,7 +378,14 @@ class DiagnosticFeaturesTests(unittest.TestCase):
         folders = [self.root / 'first-private-folder', self.root / 'second-private-folder']
         for folder in folders:
             folder.mkdir(); (folder / 'node.exe').write_bytes(b'x')
-        with patch.dict(os.environ, {'PATH': os.pathsep.join(map(str, folders))}), patch.object(diagnostics.os, 'name', 'nt'):
+        # Emulate Windows suffixes and PATH separators only inside this module;
+        # changing the shared os.name makes pathlib select WindowsPath on Linux.
+        native_os_name = os.name
+        windows_os = SimpleNamespace(name='nt', path=os.path, pathsep=';',
+                                     environ={'PATH': ';'.join(map(str, folders))})
+        with patch.object(diagnostics, 'os', windows_os):
+            self.assertEqual(os.name, native_os_name)
+            self.assertIsInstance(Path('.'), type(self.root))
             result = self.run_feature('f008')
         self.assertEqual(result['data']['collisions']['node'], [{'path_position': 0, 'entry_name': 'node.exe'}, {'path_position': 1, 'entry_name': 'node.exe'}])
         self.assertNotIn('private-folder', json.dumps(result))

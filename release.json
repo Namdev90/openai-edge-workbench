@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "version": "3.0.0-preview.1",
-  "launcherSha256": "513725db504c533d991fcfdb1dccde3524e5d551c3e1575fcf5895ac567d3821",
-  "payloadSha256": "3f78d55d421061b108643ea7953daf973b2c9d5341500e2eccee8868f711238e",
+  "launcherSha256": "8652163d3e2b7f25f31ca55dcc464c76d624f75c2441b28d4199678ae395152e",
+  "payloadSha256": "1513e5de46d06eb0bad77d43f3d7c2ea7d027b79b32c2b13a8a0d55cdf1ffa20",
   "setupSha256": "2360295d3d44f19d5e39ea2f48a774833720ca4d26f9b1ccb1a86c25540cdd04",
   "setupLauncherSha256": "e865b06f13db32de9401d31c79ab1ee508550f99c036ad20093f47179c4e919a",
   "sourceFiles": {
@@ -31,7 +31,7 @@
     "tests/test_dotnet_channels.py": "def58cb166dee7c1f16728a64d6aa7538a5586b5e0c1e7176ed829de79cda44b",
     "tests/test_engine.py": "11ea9a124ddc07514d4a488aadfae4fbc6223864c279f3a8739ed94f158de6fa",
     "tests/test_feature_api.py": "68872ffd19b930c5b3340c288ffdc64de2827e82c322e74d1773098b3ad4e696",
-    "tests/test_feature_diagnostics.py": "c93401e9fcb7c53d37b0314e970ca17bb3e67f02cd378df03a0420c73fcc82ee",
+    "tests/test_feature_diagnostics.py": "4a918cb5bc87f8a16e2ad44ae890378e8f794515c701b1c92687d98415b5c1b0",
     "tests/test_feature_hub.py": "08a446352ecc47073388c865d6a8ea9f8c56de3a346379bc5e2dc9d9e8f6b587",
     "tests/test_feature_plans.py": "ecaab4ee14d3ca57f3af077c886a85bba2d90a30d77b6877214f05624de4524d",
     "tests/test_feature_reports.py": "0779fb1bbeb479c6f9e51a4c21fff48a617a9938bc30234444b5c3a690e3e762",
