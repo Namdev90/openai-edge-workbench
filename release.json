@@ -1,17 +1,17 @@
 {
   "schema": 1,
   "version": "2.0.2-preview.1",
-  "launcherSha256": "0ab7214ac6dcfcc7a43299be9b49b68b88dc5a00aff1df64c68d60baf349a07d",
-  "payloadSha256": "ab63ebdf6ae04e35f7176c51ca168ce12b60c0d938e67b95ff137f60ac292c07",
+  "launcherSha256": "01c4cbd9390ff4cce8d2f614c4246db2a3a593b38afc65a5dff7a3ecf72913f5",
+  "payloadSha256": "03396dd2c875609f683fbf51b55c8a7a9d754e32de724851e3a322290b1da4db",
   "setupSha256": "12c84bba8543a9ee822b9519f4fed2314f5349c954c34b966861c24b10eff7b7",
-  "setupLauncherSha256": "1104bfc42f2457db9c1dc30835cef75ccc2ae3526329175d1bc31941d4b695c0",
+  "setupLauncherSha256": "210419178701eae4c412248720c409f71a8d09dd5dd6c200808e45e6bac85938",
   "sourceFiles": {
     "app.js": "ba7345a3d9dfdc3f0e9972e32f92eaa271e1c6577a06bd1456ad9739c4602c43",
     "app.py": "8e307098f0dcaed20cace8b0d29afc76889a6f435189a04e81fbeea220e35caa",
     "bootstrap.ps1": "c8ae07a57f827f10f61ea693b035447954468b2355410ae5e7c708c7a6cf7a4c",
     "docs/DESIGN.md": "56a3d0c02f1f493a28a458ea24ed1df6763e826b2e5c68374de58ab826b2fbce",
     "docs/PLAN.md": "97c8989684525794c32f92b857565a975ba6e8c6dae91dc5c26e1d663f0b9261",
-    "engine.py": "eaa96cb1989f6d19db2eef3d84da1a6874e3594428bb32490394aee30f0d3737",
+    "engine.py": "411a5420b7859fcc743f531fd4ff38f2a943a87793256a3b76d8d25d342a5bf8",
     "index.html": "fa2e8a55751d4837ff986451a087c3bd54da9b9be1ad7ed595a6422cfc5ffca2",
     "README.md": "d4da44c103ad5c115be068d73275ce288714859cd736f51ee335e7f90fbbdaca",
     "SOURCES.md": "3bc917bc0f5dd9b855c7b619a02ff0de99f228ec64a280723149365fb58123ad",
@@ -24,7 +24,7 @@
     "tests/test_powershell_reporting.py": "961f9e453f02bf32826a3d996fff17fbe509e97ee0e0d70ecf4aec0a981b0ae2",
     "tests/test_python_compatibility.py": "7f7b6518ad818a313380a534fa2d09d72b7c5aa96b2aab814ab819e59aee6c5b",
     "tests/test_regressions.py": "56455074d21ebab873ff94fffadae8d756272c97a19ca74110b09e05e19541a8",
-    "tests/test_windows_packages.py": "4aa898fa08e3bb1014a358603962d12904180b86566612736808004d52d73211",
+    "tests/test_windows_packages.py": "1529c7022d252a8ca257c94c0505f3338302de6a86231e8e6ced37c5d132709d",
     "VERIFICATION.md": "7d1b1bff1c4735e7a0f270213c82276771959b2b7d586bb1e02357fc0021769f"
   }
 }

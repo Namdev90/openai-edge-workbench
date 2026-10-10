@@ -8,13 +8,13 @@ try {
  $gh=Get-Command gh.exe -ErrorAction SilentlyContinue;$authenticated=$false
  if($gh){$prior=$ErrorActionPreference;try{$ErrorActionPreference='Continue';& $gh.Source auth status --hostname github.com *> $null;$authenticated=($LASTEXITCODE -eq 0)}finally{$ErrorActionPreference=$prior}}
  if($authenticated){
-  $json=& $gh.Source api --hostname github.com 'repos/Namdev90/openai-edge-workbench/contents/Setup.ps1?ref=ee8ce41e532e8dc3d5fc5005c01aeaadc89e8018' 2>$null
+  $json=& $gh.Source api --hostname github.com 'repos/Namdev90/openai-edge-workbench/contents/Setup.ps1?ref=6ff4e27597fa88255589528bd5fafbf0ed5a4460' 2>$null
   if($LASTEXITCODE -ne 0){throw 'GitHub repository access failed. Check gh auth status and repository permissions.'}
   $meta=($json -join "`n")|ConvertFrom-Json
   if($meta.encoding -ne 'base64' -or $meta.size -gt 1MB){throw 'Invalid GitHub setup response.'}
   [IO.File]::WriteAllBytes($p,[Convert]::FromBase64String([string]$meta.content))
- }else{Invoke-WebRequest 'https://raw.githubusercontent.com/Namdev90/openai-edge-workbench/ee8ce41e532e8dc3d5fc5005c01aeaadc89e8018/Setup.ps1' -UseBasicParsing -OutFile $p -TimeoutSec 90}
- $alg=[Security.Cryptography.SHA256]::Create();try{$hash=([BitConverter]::ToString($alg.ComputeHash([IO.File]::ReadAllBytes($p)))).Replace('-','').ToLowerInvariant()}finally{$alg.Dispose()};if($hash -ne '791ddd5f0a16a2f577b211b1b9449ff66ab87d4728767496ba79b751d9efc9aa'){throw 'Setup checksum mismatch.'}
+ }else{Invoke-WebRequest 'https://raw.githubusercontent.com/Namdev90/openai-edge-workbench/6ff4e27597fa88255589528bd5fafbf0ed5a4460/Setup.ps1' -UseBasicParsing -OutFile $p -TimeoutSec 90}
+ $alg=[Security.Cryptography.SHA256]::Create();try{$hash=([BitConverter]::ToString($alg.ComputeHash([IO.File]::ReadAllBytes($p)))).Replace('-','').ToLowerInvariant()}finally{$alg.Dispose()};if($hash -ne '12c84bba8543a9ee822b9519f4fed2314f5349c954c34b966861c24b10eff7b7'){throw 'Setup checksum mismatch.'}
  $a=@{}
  if($env:EDGE_NO_LAUNCH -eq '1'){$a.NoLaunch=$true;$a.NoShortcut=$true}
  if($env:EDGE_ROOT){$a.Root=$env:EDGE_ROOT}
