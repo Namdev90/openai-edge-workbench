@@ -1,0 +1,15 @@
+# Preserve byte-identical executable launchers and archived GUI assets.
+*.cmd -text
+*.png -text
+*.zip -text
+# Git for Windows can otherwise convert Python/PowerShell source LF to CRLF
+# and break exact correspondence with the launcher's embedded source archive.
+*.py text eol=lf
+*.ps1 text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.txt text eol=lf
