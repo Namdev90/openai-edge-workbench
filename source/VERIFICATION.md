@@ -4,7 +4,7 @@ Build: OpenAI Edge Workbench 2.0.2-preview.1, 10 October 2026.
 
 ## Application checks
 
-81 regression tests pass locally on Windows. Coverage includes interpreter selection with a full selected-pack wheel solution, explicit resolution rejection versus transport errors, hashed package locks, pack imports and version matching, candidate preservation, exact-channel timeout retries, WebView2 registry verification, catalog mismatches, native PowerShell JSON under a foreign module search path, safe original PATH backups, npm version/warning separation, and concurrent HTTP report reads while reports are replaced.
+99 regression tests pass locally on Windows. Coverage includes interpreter selection with a full selected-pack wheel solution, explicit resolution rejection versus transport errors, hashed package locks, pack imports and version matching, candidate preservation, exact-channel timeout retries, WebView2 registry verification, catalog mismatches, native PowerShell JSON under a foreign module search path, safe original PATH backups, npm version/warning separation, and concurrent HTTP report reads while reports are replaced. Signed local Terminal recovery and exact per-user Canary side-by-side installation have dedicated failure and cancellation checks.
 
 Existing coverage also checks architecture/release selection, secret redaction, archive traversal, Windows junctions, configuration conflict preservation, ownership-limited cleanup, process exit evidence, local capability/origin/Host checks, simulation labeling, and rejection of a second worker. An independent Astra review ran the suite and checked the fixes.
 
@@ -17,6 +17,10 @@ The installed uv executable was exercised against the complete selected package 
 The supplied initial laptop diagnostic confirmed exact Codex alpha execution, configured ChatGPT login, a real authenticated model round trip, matching Playwright browser launch, and many installed package versions. It also identified two preview network timeouts, hidden WebView2 registration, an incompatible document wheel, and failed PATH/report generation. The targeted repair records actual results separately in the local diagnostic directory; private laptop reports are not committed to this public repository.
 
 Native registry verification confirmed the reported WebView2 version independently of WinGet inventory. Actual npm execution reproduced its nightly engine warning; the version remains clean while the warning is preserved. A passing process startup does not establish npm's declared compatibility.
+
+The targeted laptop repair verified PowerShell Preview 7.7.5.0 and Terminal Preview 1.26.2734.0. Terminal's repeated streaming URI timeouts were recovered with the exact official bundle after SHA256 and valid Microsoft signature checks; Windows registered the exact healthy Preview AppX. The signed official Canary 157.0.8095.0 installer created the per-user Chrome SxS binary with the documented side-by-side switches. Regular Chrome remained 154.0.8037.98. WebView2 155.0.4283.45 was independently registered. These are point-in-time observations rather than fixed future versions.
+
+The repaired private Python 3.14.8 environment passed real DuckDB, NumPy, Biopython, DOCX, XLSX, and PDF operation checks. Codex configuration and instructions were byte-identical before and after repair. Original user PATH was backed up before adding the managed shims, and the diagnostic/report steps completed without their previous JSON errors.
 
 ## Limits
 

@@ -38,7 +38,7 @@ DOCS_MCP = 'https://developers.openai.com/mcp'
 TRUSTED_HOSTS = frozenset({
     'nodejs.org', 'registry.npmjs.org', 'api.github.com', 'github.com',
     'release-assets.githubusercontent.com', 'objects.githubusercontent.com',
-    'pypi.org', 'files.pythonhosted.org', 'builds.dotnet.microsoft.com',
+    'pypi.org', 'files.pythonhosted.org', 'builds.dotnet.microsoft.com', 'dl.google.com',
     'dotnetcli.azureedge.net', 'dot.net', 'aka.ms', 'learn.chatgpt.com',
 })
 ANSI = re.compile(r'\x1b\[[0-?]*[ -/]*[@-~]')
@@ -682,6 +682,144 @@ class Workbench:
         self.report['coverage']['classic_app']='Classic is not removed automatically: cloud identity and unsynced local data cannot be verified by an installer.'
         self.current_result['detail']='Inventory captured; local configuration backup made without exporting its contents.'
 
+    def install_terminal_preview_local(self, version: str) -> list[dict]:
+        """Recover a completed URI timeout using the same signed Preview payload."""
+        if not re.fullmatch(r'\d+\.\d+\.\d+\.\d+',version):
+            raise OperationError('Terminal Preview local recovery requires a known exact catalog version.')
+        release_url='https://api.github.com/repos/microsoft/terminal/releases/tags/v'+version
+        release=self.get_json(release_url)
+        if release.get('draft') or release.get('tag_name')!='v'+version:
+            raise OperationError('The official Terminal release metadata does not match the selected Preview version.')
+        name='Microsoft.WindowsTerminalPreview_'+version+'_8wekyb3d8bbwe.msixbundle'
+        assets=[asset for asset in release.get('assets',[]) if asset.get('name')==name]
+        if len(assets)!=1:raise OperationError('The official release has no unique exact Terminal Preview bundle; no alternative build installed.')
+        asset=assets[0]
+        url='https://github.com/microsoft/terminal/releases/download/v'+version+'/'+name
+        digest=asset.get('digest','')
+        if asset.get('browser_download_url')!=url or not isinstance(digest,str) or not re.fullmatch(r'sha256:[0-9a-fA-F]{64}',digest):
+            raise OperationError('An exact official Terminal Preview asset URL and published SHA256 digest are required for local recovery.')
+        sha=digest.split(':',1)[1].lower()
+        download=self.root/'downloads'/name
+        assert_regular_path(download)
+        self.fetch(url,download,sha,max_bytes=512*1024**2)
+        signature=self.ps_json("$s=Get-AuthenticodeSignature -LiteralPath "+ps_literal(download)+"; [pscustomobject]@{status=$s.Status.ToString();subject=if($s.SignerCertificate){$s.SignerCertificate.Subject}else{''}} | ConvertTo-Json -Compress",label='Verify official Terminal Preview bundle Microsoft signature')
+        evidence={'reason':'Completed WinGet WININET_E_TIMEOUT (0x80072EE2); retry exact Preview payload as a local file','version':version,'release_metadata':release_url,'asset_url':url,'sha256':sha,'signature':signature}
+        self.current_result['local_recovery']=evidence
+        subject='CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US'
+        if not isinstance(signature,dict) or signature.get('status')!='Valid' or signature.get('subject')!=subject:
+            raise OperationError('The downloaded Terminal Preview bundle has no verified valid Microsoft Corporation signature; it was not installed.')
+        # Recheck the hash immediately before Add-AppxPackage. Windows validates
+        # the package signature and framework dependencies normally; no bypass,
+        # force-close, or dependency-skipping option is supplied.
+        body="Import-Module ([IO.Path]::Combine($PSHOME,'Modules\\Appx\\Appx.psd1')) -ErrorAction Stop; $path="+ps_literal(download)+"; if((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ine "+ps_literal(sha)+") {throw 'Terminal bundle checksum changed; installation not attempted'}; $s=Get-AuthenticodeSignature -LiteralPath $path; if($s.Status.ToString() -ne 'Valid' -or $s.SignerCertificate.Subject -ne "+ps_literal(subject)+") {throw 'Terminal bundle signature changed; installation not attempted'}; Add-AppxPackage -Path $path -ErrorAction Stop; $packages=@(Get-AppxPackage -Name Microsoft.WindowsTerminalPreview | Select-Object Name,@{n='version';e={$_.Version.ToString()}},@{n='status';e={$_.Status.ToString()}}); ConvertTo-Json -InputObject $packages -Compress"
+        if self.cancel.is_set():raise StopRun('Stopped before local Terminal Preview installation.')
+        registrations=self.ps_json(body,label='Install exact signed local Terminal Preview bundle and verify AppX registration')
+        if not isinstance(registrations,list) or not any(isinstance(row,dict) and row.get('Name')=='Microsoft.WindowsTerminalPreview' and row.get('version')==version and row.get('status')=='Ok' for row in registrations):
+            raise OperationError('Local Terminal installation returned, but the exact Preview AppX name, version, and healthy status were not verified.')
+        evidence['registrations']=registrations
+        return registrations
+
+    def canary_registration(self) -> dict:
+        # WinGet's Canary manifest historically used ProductCode "Google Chrome",
+        # so an ordinary Chrome uninstall entry cannot establish Canary presence.
+        body=r"""$arp=@(Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall','HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall','HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall' -ErrorAction SilentlyContinue | Get-ItemProperty -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -eq 'Google Chrome Canary' -or $_.DisplayName -eq 'Google Chrome' -or $_.InstallLocation -match 'Chrome SxS'} | Select-Object DisplayName,DisplayVersion,InstallLocation);
+        $target=Join-Path $env:LOCALAPPDATA 'Google\Chrome SxS\Application\chrome.exe';
+        $canary=@($target,(Join-Path $env:ProgramFiles 'Google\Chrome SxS\Application\chrome.exe'),(Join-Path ${env:ProgramFiles(x86)} 'Google\Chrome SxS\Application\chrome.exe'));
+        $stable=@((Join-Path $env:LOCALAPPDATA 'Google\Chrome\Application\chrome.exe'),(Join-Path $env:ProgramFiles 'Google\Chrome\Application\chrome.exe'),(Join-Path ${env:ProgramFiles(x86)} 'Google\Chrome\Application\chrome.exe'));
+        foreach($registration in $arp) {
+          if($registration.InstallLocation) {
+            $paths=@([IO.Path]::Combine($registration.InstallLocation,'chrome.exe'),[IO.Path]::Combine($registration.InstallLocation,'Application\chrome.exe'))
+            if($registration.InstallLocation -match '(?i)(?:^|[\\/])Chrome SxS(?:[\\/]|$)') {$canary+=$paths}
+            elseif($registration.DisplayName -eq 'Google Chrome') {$stable+=$paths}
+          }
+        }
+        function Read-ChromeFiles($paths,$inspectSigner) {
+          foreach($path in @($paths | Select-Object -Unique)) {
+            if([IO.File]::Exists($path)) {
+              $version=[Diagnostics.FileVersionInfo]::GetVersionInfo($path); $signature=$null
+              if($inspectSigner) {
+                $s=Get-AuthenticodeSignature -LiteralPath $path
+                $signature=[pscustomobject]@{status=$s.Status.ToString();subject=if($s.SignerCertificate){$s.SignerCertificate.Subject}else{''};simple_name=if($s.SignerCertificate){$s.SignerCertificate.GetNameInfo([Security.Cryptography.X509Certificates.X509NameType]::SimpleName,$false)}else{''}}
+              }
+              [pscustomobject]@{path=$path;version=$version.ProductVersion;signature=$signature}
+            }
+          }
+        }
+        $files=@(Read-ChromeFiles $canary $true); $stableFiles=@(Read-ChromeFiles $stable $false);
+        $registered=@($arp | Where-Object {$_.DisplayName -eq 'Google Chrome Canary' -or $_.InstallLocation -match '(?i)(?:^|[\\/])Chrome SxS(?:[\\/]|$)'});
+        [pscustomobject]@{target_path=$target;target_scope='user';executables=$files;registrations=$registered;stable_executables=$stableFiles} | ConvertTo-Json -Depth 5 -Compress"""
+        result=self.ps_json(body,label='Verify Chrome Canary SxS binary versions and separate Chrome registrations')
+        if not isinstance(result,dict) or result.get('target_scope')!='user' or not isinstance(result.get('target_path'),str) or any(not isinstance(result.get(key),list) for key in ('executables','registrations','stable_executables')):
+            raise OperationError('Chrome channel inspection returned an unexpected result; no browser update attempted.')
+        for key in ('executables','stable_executables'):
+            if any(not isinstance(row,dict) or not isinstance(row.get('path'),str) or not re.fullmatch(r'\d+\.\d+\.\d+\.\d+',str(row.get('version',''))) for row in result[key]):
+                raise OperationError('Chrome binary inspection returned an ambiguous version; no browser update attempted.')
+        if not re.search(r'(?i)[\\/]Google[\\/]Chrome SxS[\\/]Application[\\/]chrome\.exe$',result['target_path']) or any(not re.search(r'(?i)[\\/]Chrome SxS[\\/](?:Application[\\/])?chrome\.exe$',row['path']) for row in result['executables']):
+            raise OperationError('Canary evidence did not refer to the expected SxS executable paths; ordinary Chrome was not accepted as Canary.')
+        return result
+
+    @staticmethod
+    def canary_user_binary(inspection: dict) -> dict|None:
+        target=inspection['target_path'].casefold()
+        records=[row for row in inspection['executables'] if row['path'].casefold()==target]
+        if not records:return None
+        if len({row['version'] for row in records})!=1:raise OperationError('Per-user Canary binary version was ambiguous; installation not attempted.')
+        binary=records[0];signature=binary.get('signature')
+        if not isinstance(signature,dict) or signature.get('status')!='Valid' or signature.get('simple_name')!='Google LLC' or not re.search(r'(?:^|,\s*)O=Google LLC(?:,|$)',str(signature.get('subject',''))):
+            raise OperationError('The existing per-user Canary SxS file has no verified valid Google LLC signature. It was preserved for review.')
+        return binary
+
+    def install_canary_local(self, version: str, before: dict) -> dict:
+        """Install only the exact signed Google side-by-side build in the catalog."""
+        if not re.fullmatch(r'\d+\.\d+\.\d+\.\d+',version):
+            raise OperationError('Canary installation requires a known exact catalog version; browser channels were preserved.')
+        arch=getattr(self,'arch',None) or architecture()
+        if arch not in ('x64','arm64'):raise OperationError('No supported Canary installer architecture selected.')
+        path='manifests/g/Google/Chrome/Canary/'+version+'/Google.Chrome.Canary.installer.yaml'
+        meta_url='https://api.github.com/repos/microsoft/winget-pkgs/contents/'+path
+        metadata=self.get_json(meta_url)
+        if not isinstance(metadata,dict) or metadata.get('encoding')!='base64' or metadata.get('path')!=path or not isinstance(metadata.get('content'),str) or len(metadata['content'])>512*1024:
+            raise OperationError('Exact official WinGet Canary installer metadata was not available; no browser channel substituted.')
+        try:
+            manifest=base64.b64decode(re.sub(r'\s+','',metadata['content']),validate=True).decode('utf-8-sig')
+        except (ValueError,UnicodeError) as exc:
+            raise OperationError('Official Canary metadata could not be decoded; no browser update attempted.') from exc
+        # This intentionally supports a narrow manifest shape, rather than loading
+        # arbitrary YAML or inferring switches from a different package/channel.
+        for key,value in (('PackageIdentifier','Google.Chrome.Canary'),('PackageVersion',version),('InstallerType','exe'),('Scope','user')):
+            if re.findall(r'(?m)^'+key+r':\s*(\S[^\r\n]*)\s*$',manifest)!=[value]:
+                raise OperationError('Canary manifest identity, version, installer type, or user scope was ambiguous; no browser update attempted.')
+        switches=re.search(r'(?m)^InstallerSwitches:\r?\n((?:[ \t].*(?:\r?\n|$))+)',manifest)
+        if not switches or re.findall(r'(?m)^\s+Custom:\s*([^\r\n]*)$',switches[1])!=['--chrome-sxs --do-not-launch-chrome'] or any(re.match(r'\s+([^:]+):',line).group(1) not in ('Custom','Log') for line in switches[1].splitlines() if re.match(r'\s+([^:]+):',line)):
+            raise OperationError('Official Canary side-by-side switches were not uniquely verified; no browser update attempted.')
+        blocks=re.findall(r'(?ms)^- Architecture:\s*(x64|arm64|x86)\r?\n(.*?)(?=^- Architecture:|\Z)',manifest)
+        selected=[body for cpu,body in blocks if cpu==arch]
+        if len(selected)!=1:raise OperationError('Official Canary architecture selection was ambiguous; no browser update attempted.')
+        urls=re.findall(r'(?m)^  InstallerUrl:\s*(\S+)\s*$',selected[0])
+        hashes=re.findall(r'(?m)^  InstallerSha256:\s*([0-9a-fA-F]{64})\s*$',selected[0])
+        if len(urls)!=1 or len(hashes)!=1:raise OperationError('Exact Canary installer URL and SHA256 are required; no browser update attempted.')
+        url=urls[0];parsed=urllib.parse.urlsplit(url)
+        if parsed.scheme!='https' or parsed.netloc!='dl.google.com' or parsed.query or parsed.fragment or not re.fullmatch(r'/release2/chrome/[a-z0-9]+_'+re.escape(version)+'/'+re.escape(version)+r'_chrome_installer_uncompressed\.exe',parsed.path):
+            raise OperationError('Canary installer metadata did not identify the expected exact official Google download; no browser update attempted.')
+        sha=hashes[0].lower();download=self.root/'downloads'/('canary-'+version+'-'+arch+'.exe')
+        assert_regular_path(download)
+        self.fetch(url,download,sha,max_bytes=512*1024**2)
+        signature=self.ps_json("$s=Get-AuthenticodeSignature -LiteralPath "+ps_literal(download)+"; [pscustomobject]@{status=$s.Status.ToString();subject=if($s.SignerCertificate){$s.SignerCertificate.Subject}else{''};simple_name=if($s.SignerCertificate){$s.SignerCertificate.GetNameInfo([Security.Cryptography.X509Certificates.X509NameType]::SimpleName,$false)}else{''}} | ConvertTo-Json -Compress",label='Verify exact Canary installer Google signature')
+        evidence={'source_manifest':meta_url,'version':version,'architecture':arch,'url':url,'sha256':sha,'signature':signature,'switches':['--chrome-sxs','--do-not-launch-chrome'],'before':before}
+        self.current_result['channel_install']=evidence
+        if not isinstance(signature,dict) or signature.get('status')!='Valid' or signature.get('simple_name')!='Google LLC' or not re.search(r'(?:^|,\s*)O=Google LLC(?:,|$)',str(signature.get('subject',''))):
+            raise OperationError('A valid Google LLC signer and organization are required; the browser installer was not run.')
+        body="$path="+ps_literal(download)+"; if((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ine "+ps_literal(sha)+") {throw 'Canary checksum changed; installer not run'}; $s=Get-AuthenticodeSignature -LiteralPath $path; if($s.Status.ToString() -ne 'Valid' -or $s.SignerCertificate.GetNameInfo([Security.Cryptography.X509Certificates.X509NameType]::SimpleName,$false) -ne 'Google LLC' -or $s.SignerCertificate.Subject -notmatch '(?:^|,\\s*)O=Google LLC(?:,|$)') {throw 'Canary signature changed; installer not run'}; & $path '--chrome-sxs' '--do-not-launch-chrome' | Out-Null; if($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 3){throw ('Canary installer failed with exit '+$LASTEXITCODE)}; 'CANARY_INSTALL_COMPLETED'"
+        if self.cancel.is_set():raise StopRun('Stopped before local Canary side-by-side installation.')
+        self.require(self.ps(body,timeout=900,label='Install exact verified Canary side-by-side without launching Chrome'),'Official Canary side-by-side installation')
+        after=self.canary_registration();evidence['after']=after
+        binary=self.canary_user_binary(after)
+        if not binary or binary['version']!=version:
+            raise OperationError('Installer returned but the exact Chrome Canary SxS binary version was not verified.')
+        stable=lambda data:{row['path'].casefold():row['version'] for row in data['stable_executables']}
+        if stable(after)!=stable(before):raise OperationError('Stable Chrome binary versions changed during Canary installation; further browser actions stopped for review.')
+        return after
+
     def webview_registration(self) -> list[dict]:
         # Evergreen may be hidden from WinGet's installed-app inventory. Microsoft
         # documents these EdgeUpdate pv values as the runtime presence check.
@@ -727,6 +865,28 @@ class Workbench:
                 if match:return match[1]
             return ''
         self.current_result['before']=parse_list(before.out)
+        if item['id']=='canary':
+            channel=self.canary_registration()
+            self.current_result['channel_registration_check']=channel
+            binary=self.canary_user_binary(channel)
+            actual=binary['version'] if binary else ''
+            self.current_result['winget_correlated_before']=self.current_result['before']
+            self.current_result['before']=actual or 'Canary SxS binary not found'
+            if not available:
+                self.current_result.update(status='CHANNEL_NOT_VERIFIED',actual=actual or 'not found',detail='An exact Canary catalog target was unavailable. Browser channels were preserved; use the official Chrome Canary download at https://www.google.com/chrome/canary/.')
+                return
+            target=available[0]
+            if not re.fullmatch(r'\d+\.\d+\.\d+\.\d+',target):
+                self.current_result.update(status='CHANNEL_NOT_VERIFIED',actual=actual or 'not found',detail='An unambiguous four-part Canary catalog target was unavailable. Browser channels were preserved; use https://www.google.com/chrome/canary/.')
+                return
+            if actual!=target:
+                if actual and tuple(map(int,actual.split('.')))>tuple(map(int,target.split('.'))):
+                    self.current_result.update(status='INSTALLED_CHECK_NEEDED',actual=actual,detail='The actual Canary SxS binary is newer than the selected WinGet catalog. It was preserved without a downgrade; independent latestness remains unverified.')
+                    return
+                channel=self.install_canary_local(target,channel)
+                actual=self.canary_user_binary(channel)['version']
+            self.current_result.update(status='VERIFIED',actual=actual,detail='Per-user Chrome Canary SxS binary and valid Google signature match the exact selected catalog version. Other installation scopes were inspected only; browser UI not exercised.')
+            return
         action='upgrade' if before.code==0 else 'install'
         args=[wing,action,*common,'--accept-package-agreements','--silent']
         if action=='upgrade':args+=['--include-unknown']
@@ -746,18 +906,25 @@ class Workbench:
             if self.cancel.wait(delay):raise StopRun('Stopped during the WinGet retry delay.')
         # WinGet's no-applicable-update code is not a network/install success.
         no_update=(r.code & 0xffffffff)==0x8A15002B and before.code==0
+        local_terminal=None
         if r.code not in (0,3010,1641) and not no_update:
-            self.require(r,'WinGet '+action+' '+item['package'])
+            if item['id']=='terminal' and (r.code & 0xffffffff)==0x80072EE2 and available:
+                self.log('WinGet completed three timeout attempts. Recovering the exact same official Terminal Preview bundle from a verified local file.','warning')
+                local_terminal=self.install_terminal_preview_local(available[0])
+            else:self.require(r,'WinGet '+action+' '+item['package'])
         self.refresh_path()
         after=self.run_command([wing,'list',*common],quiet=True,timeout=90,label='Verify registered package: '+item['package'])
         actual=parse_list(after.out)
+        if local_terminal:
+            actual=available[0]
+            self.current_result['registration_check']={'method':'Exact Terminal Preview AppX name, version, and healthy status','registrations':local_terminal,'winget_inventory_exit_code':after.code}
         if item['id']=='webview':
             registrations=self.webview_registration()
             self.current_result['registration_check']={'method':'Microsoft-documented EdgeUpdate Clients pv registry values','registrations':registrations,'winget_inventory_exit_code':after.code}
             if not registrations:raise OperationError('Installer returned, but neither the per-user nor per-machine WebView2 Evergreen registry key contains a valid runtime version.')
             actual=max((row['version'] for row in registrations),key=lambda version:tuple(map(int,version.split('.'))))
         self.current_result['actual']=actual or ('present; exact version not parsed' if after.code==0 else 'not found')
-        if after.code!=0 and item['id']!='webview':raise OperationError('Installer returned, but registration could not be confirmed. '+redact(after.out[-1200:]))
+        if after.code!=0 and item['id']!='webview' and not local_terminal:raise OperationError('Installer returned, but registration could not be confirmed. '+redact(after.out[-1200:]))
         if actual and available and actual.lstrip('v')==available[0].lstrip('v'):
             self.current_result['status']='VERIFIED'
             self.current_result['detail']='Registered version matches the selected package catalog. Desktop UI not exercised.'
@@ -892,9 +1059,11 @@ class Workbench:
         data=json.loads(catalog.out)
         arch=getattr(self,'arch',None) or architecture()
         selected=self.preflight_python(data,arch,uv)
+        if self.cancel.is_set():raise StopRun('Stopped after Python compatibility preflight; no interpreter was installed.')
         version=selected['version'];key=selected['key']
         self.current_result['expected']=version
         self.require(self.run_command([uv,'python','install','--no-bin','--no-registry',key],timeout=1200,label='Install compatible selected CPython '+version),'CPython installation')
+        if self.cancel.is_set():raise StopRun('Stopped after the current Python installation; no candidate environment was created.')
         directory=self.root/'environments'/('python-'+version+'-'+self.run_id)
         assert_regular_path(directory)
         py=directory/'Scripts/python.exe'

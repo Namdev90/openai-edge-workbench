@@ -24,6 +24,30 @@ def write_lock(path, packages):
 
 
 class PythonCompatibilityTests(unittest.TestCase):
+    def test_stop_during_preflight_prevents_interpreter_installation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            workbench=self.workbench(temporary)
+            def selected(*args):
+                workbench.cancel.set()
+                return catalog('3.14.8')[0]
+            with patch.object(workbench,'find',return_value='uv.exe'), patch.object(workbench,'run_command',return_value=engine.CommandResult(0,'[]')) as command, patch.object(workbench,'preflight_python',side_effect=selected):
+                with self.assertRaises(engine.StopRun):workbench.step_python()
+            self.assertEqual(command.call_count,1)
+            self.assertFalse((workbench.root/'environments').exists())
+
+    def test_stop_after_interpreter_install_prevents_environment_creation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            workbench=self.workbench(temporary)
+            def run(args,**kwargs):
+                if args[1:3]==['python','install']:
+                    workbench.cancel.set()
+                    return engine.CommandResult(0,'installed')
+                return engine.CommandResult(0,'[]')
+            with patch.object(workbench,'find',return_value='uv.exe'), patch.object(workbench,'run_command',side_effect=run) as command, patch.object(workbench,'preflight_python',return_value=catalog('3.14.8')[0]):
+                with self.assertRaises(engine.StopRun):workbench.step_python()
+            self.assertEqual(command.call_count,2)
+            self.assertFalse((workbench.root/'environments').exists())
+
     def workbench(self, path, **options):
         workbench = engine.Workbench(Path(path))
         workbench.current_result = {}

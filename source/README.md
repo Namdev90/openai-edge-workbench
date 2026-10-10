@@ -18,6 +18,8 @@ WinGet tools are updated to the version offered by their **specific configured c
 
 Completed installer network timeouts (`0x80072EE2`) receive bounded retries of the same exact package and channel. Killed managers, signature/security failures and other errors are not retried. WebView2 presence is checked through Microsoft's documented Evergreen registry values because WinGet can omit that runtime. A known catalog-versus-installed mismatch stays visible as `VERSION_MISMATCH`. npm's actual version is stored separately from its compatibility warnings; a running nightly does not suppress those warnings.
 
+If Windows Terminal Preview streaming still times out, the exact official release bundle can be downloaded locally, SHA-256 and Microsoft signature checked, and installed with normal AppX dependency/signature validation. Canary is verified through its `Chrome SxS` executable rather than WinGet's regular-Chrome correlation. A signed, hash-verified official Canary installer uses the publisher's side-by-side switches; the regular browser and its profiles are retained.
+
 ## Default scope
 
 Always: current ChatGPT desktop Store ID `9PLM9XGG6VKS`, Git, GitHub CLI, uv, PowerShell Preview, VS Code Insiders, Windows Terminal Preview, WebView2, Node nightly, npm bundled with that nightly, official Codex CLI, official OpenAI API CLI when a verifiable Windows release asset exists, isolated Python and JavaScript OpenAI SDKs, OpenAI/Python/Jupyter preview editor extensions.

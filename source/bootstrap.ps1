@@ -1,8 +1,11 @@
 # OpenAI Edge Workbench bootstrap. Windows PowerShell 5.1+, current user.
 # No machine-wide execution-policy changes or remote-script evaluation.
 [CmdletBinding()]
-param([string]$Root = (Join-Path $env:LOCALAPPDATA 'OpenAI-Edge-Workbench'),[switch]$NoLaunch)
+param([string]$Root = ([IO.Path]::Combine($env:LOCALAPPDATA,'OpenAI-Edge-Workbench')),[switch]$NoLaunch)
 $ErrorActionPreference = 'Stop'
+Import-Module ([IO.Path]::Combine($PSHOME,'Modules/Microsoft.PowerShell.Management/Microsoft.PowerShell.Management.psd1')) -ErrorAction Stop
+Import-Module ([IO.Path]::Combine($PSHOME,'Modules/Microsoft.PowerShell.Utility/Microsoft.PowerShell.Utility.psd1')) -ErrorAction Stop
+Import-Module ([IO.Path]::Combine($PSHOME,'Modules/Microsoft.PowerShell.Security/Microsoft.PowerShell.Security.psd1')) -ErrorAction Stop
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)

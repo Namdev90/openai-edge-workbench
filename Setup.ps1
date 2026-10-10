@@ -1,10 +1,11 @@
 # OpenAI Edge Workbench: commit-resolved, checksum-verified GitHub updater.
 [CmdletBinding()]
 param([switch]$Library,[switch]$VerifyOnly,[switch]$NoLaunch,[switch]$NoShortcut,[switch]$Offline,
- [string]$Commit,[string]$Root=(Join-Path $env:LOCALAPPDATA 'OpenAI-Edge-Workbench'))
+ [string]$Commit,[string]$Root=([IO.Path]::Combine($env:LOCALAPPDATA,'OpenAI-Edge-Workbench')))
 $ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue'
-Import-Module (Join-Path $PSHOME 'Modules/Microsoft.PowerShell.Utility/Microsoft.PowerShell.Utility.psd1') -ErrorAction Stop
-Import-Module (Join-Path $PSHOME 'Modules/Microsoft.PowerShell.Security/Microsoft.PowerShell.Security.psd1') -ErrorAction Stop
+Import-Module ([IO.Path]::Combine($PSHOME,'Modules/Microsoft.PowerShell.Management/Microsoft.PowerShell.Management.psd1')) -ErrorAction Stop
+Import-Module ([IO.Path]::Combine($PSHOME,'Modules/Microsoft.PowerShell.Utility/Microsoft.PowerShell.Utility.psd1')) -ErrorAction Stop
+Import-Module ([IO.Path]::Combine($PSHOME,'Modules/Microsoft.PowerShell.Security/Microsoft.PowerShell.Security.psd1')) -ErrorAction Stop
 $script:Repository='Namdev90/openai-edge-workbench';$script:UseGh=$false
 function Test-GhAuthenticated([string]$Command){
  $prior=$ErrorActionPreference

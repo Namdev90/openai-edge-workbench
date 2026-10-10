@@ -31,7 +31,7 @@
     ['copy','download','reports'].forEach(id=>$(id).disabled=!data.report_ready);
     $('terminal').disabled=!data.terminal_ready;
     if(data.simulated)banner('SIMULATION ONLY — no software is being installed or checked on your laptop.','warning');
-    else if(data.finished)banner(data.cancel_requested?'Stopped. Read the partial report before restarting.':'Run finished. Read every failed or review-needed item; installation is not proof that all services work.',['FAILED','REVIEW_NEEDED','VERSION_MISMATCH','INSTALLED_CHECK_NEEDED','REBOOT_REQUIRED'].some(x=>counts[x])?'warning':'');
+    else if(data.finished)banner(data.cancel_requested?'Stopped. Read the partial report before restarting.':'Run finished. Read every failed or review-needed item; installation is not proof that all services work.',['FAILED','REVIEW_NEEDED','VERSION_MISMATCH','CHANNEL_NOT_VERIFIED','INSTALLED_CHECK_NEEDED','REBOOT_REQUIRED'].some(x=>counts[x])?'warning':'');
     else if(data.cancel_requested)banner('Stop requested. Waiting for the current command to finish; no further steps will start.','warning');
     else if(data.started)banner('Applying selected updates. Windows installers may display permission or sign-in prompts.');
     else banner('Experimental channels selected. Automatic setup starts after the countdown; pause to change the scope.');

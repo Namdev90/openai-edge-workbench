@@ -1,5 +1,8 @@
 # Readable source of the CMD extraction loader. Packaged by build_release.py.
 $ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue'
+Import-Module ([IO.Path]::Combine($PSHOME,'Modules/Microsoft.PowerShell.Management/Microsoft.PowerShell.Management.psd1')) -ErrorAction Stop
+Import-Module ([IO.Path]::Combine($PSHOME,'Modules/Microsoft.PowerShell.Utility/Microsoft.PowerShell.Utility.psd1')) -ErrorAction Stop
+Import-Module ([IO.Path]::Combine($PSHOME,'Modules/Microsoft.PowerShell.Security/Microsoft.PowerShell.Security.psd1')) -ErrorAction Stop
 $root=if($env:EDGE_ROOT){$env:EDGE_ROOT}else{Join-Path $env:LOCALAPPDATA 'OpenAI-Edge-Workbench'}
 function Regular([string]$p){
  $p=[IO.Path]::GetFullPath($p)
@@ -13,7 +16,7 @@ try{
  try{$hash=([BitConverter]::ToString($alg.ComputeHash($bytes))).Replace('-','').ToLowerInvariant()}finally{$alg.Dispose()}
  if($hash -ne '__PAYLOAD_SHA256__'){throw 'Payload checksum mismatch.'}
  $parent=Join-Path $root 'app';Regular $parent;[void](New-Item -ItemType Directory -Path $parent -Force)
- $app=Join-Path $parent ('2.0.1-'+$hash.Substring(0,12)+'-'+[guid]::NewGuid().ToString('N'))
+ $app=Join-Path $parent ('__RELEASE_VERSION__-'+$hash.Substring(0,12)+'-'+[guid]::NewGuid().ToString('N'))
  $zip=$app+'.zip';[IO.File]::WriteAllBytes($zip,$bytes)
  # Every launch extracts fresh verified bytes; no trust in a cached marker file.
  Add-Type -AssemblyName System.IO.Compression.FileSystem
