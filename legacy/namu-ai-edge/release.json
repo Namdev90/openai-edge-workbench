@@ -1,0 +1,14 @@
+{
+  "schema": 2,
+  "version": "2.0.0",
+  "files": {
+    "Edge.ps1": "61513b7b3d3585358c71a1d180bee3a5c292e0314deaa96aea4825ab9429dcc5",
+    "install.ps1": "791b30470b4ab7af43c0c6e2a4a16a278ffcff17eb53cc7ebfe48638b11be4c7",
+    "catalog.json": "48099f5188990ec8bd56e406bb542bb12e0d2040746a32cdc7e09f437a54d8f1",
+    "README.md": "2f87f75fa5a31dd8ff9c939913f2db2889d99d8b15f0b33f0fe7b12ababb141a",
+    "IMPLEMENTATION.md": "a7ad5e608dfb3afb6673b4fe93517e94c450c3f7cb90eb10007542109b2d769c",
+    "Build-Release.py": "052a9e4598f82470e864458102643dd6e137d0a0495fc06589c8dd919571190a",
+    "tests/Test-Edge.ps1": "86a9bb6d82ef6714303d87b96a0f68239358fe8604f9bd8d0ba4091dbe0ebcfb",
+    "tests/test_distribution.py": "6f41d9e5f228e1c913026b682af08db9e9c1b4db628dc6a94229e36f7534f106"
+  }
+}

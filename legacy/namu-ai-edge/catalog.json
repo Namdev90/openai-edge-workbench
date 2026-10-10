@@ -1,0 +1,136 @@
+{
+  "schema": 2,
+  "packages": [
+    {
+      "name": "ChatGPT + Codex desktop",
+      "id": "9PLM9XGG6VKS",
+      "source": "msstore",
+      "channel": "publisher Store channel"
+    },
+    {
+      "name": "VS Code Insiders",
+      "id": "Microsoft.VisualStudioCode.Insiders",
+      "source": "winget",
+      "channel": "Insiders"
+    },
+    {
+      "name": "Git",
+      "id": "Git.Git",
+      "source": "winget",
+      "channel": "latest in catalog"
+    },
+    {
+      "name": "GitHub CLI",
+      "id": "GitHub.cli",
+      "source": "winget",
+      "channel": "latest in catalog"
+    },
+    {
+      "name": "PowerShell Preview",
+      "id": "Microsoft.PowerShell.Preview",
+      "source": "winget",
+      "channel": "Preview"
+    },
+    {
+      "name": "Windows Terminal Preview",
+      "id": "Microsoft.WindowsTerminal.Preview",
+      "source": "winget",
+      "channel": "Preview"
+    },
+    {
+      "name": "uv Python manager",
+      "id": "astral-sh.uv",
+      "source": "winget",
+      "channel": "latest in catalog"
+    },
+    {
+      "name": "7-Zip",
+      "id": "7zip.7zip",
+      "source": "winget",
+      "channel": "latest in catalog"
+    },
+    {
+      "name": "LibreOffice",
+      "id": "TheDocumentFoundation.LibreOffice",
+      "source": "winget",
+      "channel": "latest in catalog"
+    },
+    {
+      "name": "Pandoc",
+      "id": "JohnMacFarlane.Pandoc",
+      "source": "winget",
+      "channel": "latest in catalog"
+    },
+    {
+      "name": "FFmpeg",
+      "id": "Gyan.FFmpeg",
+      "source": "winget",
+      "channel": "latest in catalog"
+    },
+    {
+      "name": "ImageMagick",
+      "id": "ImageMagick.ImageMagick",
+      "source": "winget",
+      "channel": "latest in catalog"
+    },
+    {
+      "name": "Zotero",
+      "id": "Zotero.Zotero",
+      "source": "winget",
+      "channel": "latest in catalog"
+    }
+  ],
+  "npmPackages": [
+    "@openai/codex",
+    "openai",
+    "@openai/agents",
+    "@openai/codex-sdk",
+    "@modelcontextprotocol/sdk",
+    "playwright"
+  ],
+  "pythonPackages": [
+    "openai",
+    "openai-agents",
+    "mcp",
+    "httpx",
+    "pandas",
+    "numpy",
+    "matplotlib",
+    "pillow",
+    "python-docx",
+    "openpyxl",
+    "pypdf",
+    "reportlab",
+    "playwright"
+  ],
+  "endpoints": [
+    {
+      "name": "ChatGPT",
+      "url": "https://chatgpt.com/"
+    },
+    {
+      "name": "OpenAI API",
+      "url": "https://api.openai.com/v1/models"
+    },
+    {
+      "name": "OpenAI sign-in",
+      "url": "https://auth.openai.com/"
+    },
+    {
+      "name": "OpenAI status",
+      "url": "https://status.openai.com/"
+    },
+    {
+      "name": "npm",
+      "url": "https://registry.npmjs.org/"
+    },
+    {
+      "name": "PyPI",
+      "url": "https://pypi.org/simple/"
+    },
+    {
+      "name": "VS Marketplace",
+      "url": "https://marketplace.visualstudio.com/"
+    }
+  ]
+}
