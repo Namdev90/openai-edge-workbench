@@ -9,6 +9,9 @@ Versions are discovered at runtime; this is not a fixed-version snapshot.
 - Codex CLI documentation: https://learn.chatgpt.com/docs/cli
 - Official API CLI: https://developers.openai.com/api/docs/libraries/openai-cli and https://github.com/openai/openai-cli
 - WinGet install semantics: https://learn.microsoft.com/en-us/windows/package-manager/winget/install
+- WinGet return codes: https://github.com/microsoft/winget-cli/blob/master/doc/windows/package-manager/winget/returnCodes.md
+- WebView2 Evergreen distribution and official registry presence checks: https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution
+- Windows network timeout error interpretation: https://learn.microsoft.com/en-us/troubleshoot/windows-client/installing-updates-features-roles/common-windows-update-errors
 - VS Code command-line extension management: https://code.visualstudio.com/docs/configure/command-line
 - uv CLI and Python catalogs: https://docs.astral.sh/uv/reference/cli/ and https://docs.astral.sh/uv/concepts/python-versions/
 - Node nightly metadata and checksums: https://nodejs.org/download/nightly/index.json

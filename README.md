@@ -14,6 +14,8 @@ If the repository is private, use the authenticated command in SETUP.md. The upd
 
 The **OpenAI Edge Workbench** desktop shortcut refreshes published source before each launch. Offline fallback rechecks cached launcher and embedded source hashes and records the failed update. Fresh Python/JavaScript SDK candidates are selected only after checks; failed packs retain the previous managed SDK selection. Existing projects, credentials, Codex history/configuration, provider routes, original applications and browser profiles are preserved.
 
+Version 2.0.2 repairs the first laptop diagnostic: Python is selected only after a full compatible wheel preflight, WebView2 is checked through Microsoft's registry values, preview network timeouts receive bounded same-channel retries, and native Windows PowerShell produces checked JSON for the original user PATH backup. Report reads and writes are synchronized, and remaining version or npm compatibility warnings stay visible.
+
 The setup launcher updates published code. The self-contained OpenAI-Edge-Workbench.cmd in the repository is also available as a snapshot for that release. Neither invents repair code or enables private publisher betas.
 
 Use **Copy report**, or open:
@@ -28,7 +30,7 @@ The report records selected/observed versions, exits, failures, model checks and
 
 [source/](source/) contains every embedded application file. [release.json](release.json) and [tools/verify_payload.py](tools/verify_payload.py) verify exact byte correspondence, including tests. No source-byte exception is used. [tools/build_release.py](tools/build_release.py) rebuilds the deterministic launcher after edits.
 
-The reviewed build passes 48 application tests and 12 setup/security tests in Windows PowerShell 5.1 and PowerShell 7. The actual CMD extraction and bootstrap were exercised in NoLaunch mode on Windows, with an existing Python, without installing toolkit apps or making model requests. CI repeats application/distribution checks on Windows and Linux, plus the Windows bootstrap smoke test. This does not certify a complete laptop installation; the installation report is still required.
+Application regression tests and 12 setup/security tests cover Windows PowerShell 5.1 and PowerShell 7. The actual CMD extraction and bootstrap are exercised in NoLaunch mode, and CI repeats application/distribution checks on Windows and Linux. [The verification record](source/VERIFICATION.md) separates offline checks, the supplied installation report, and targeted laptop repair results. It does not certify every desktop feature or cloud plugin.
 
 [MIGRATION.md](MIGRATION.md) and [migration-audit.json](migration-audit.json) document exact historical archives, branch cleanup conditions and verification. Historical files in legacy/ are inert references and are not executed by the active setup.
 

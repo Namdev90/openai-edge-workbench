@@ -53,7 +53,11 @@ def make_server(workbench:Workbench,token:str|None=None):
                 self.response(200,data)
             elif path=='/api/report':
                 f=workbench.run_dir/'Paste-Into-ChatGPT.txt'
-                if f.is_file():self.response(200,f.read_bytes(),'text/plain; charset=utf-8')
+                # Windows readers hold a delete-sharing lock. Finish the read
+                # before another report atomically replaces the file.
+                with workbench.lock:
+                    content=f.read_bytes() if f.is_file() else None
+                if content is not None:self.response(200,content,'text/plain; charset=utf-8')
                 else:self.response(404,{'error':'No report yet.'})
             else:self.response(404,{'error':'Not found.'})
         def do_POST(self):

@@ -1,4 +1,4 @@
-# OpenAI Edge Workbench 2.0.1-preview.1
+# OpenAI Edge Workbench 2.0.2-preview.1
 
 Independent, unsigned Windows maintenance utility generated for Namu. It is not an OpenAI product.
 
@@ -12,9 +12,11 @@ Requires Windows x64/ARM64, internet, sufficient disk space and WinGet / Microso
 
 ## Release policy
 
-This is **not stable-first**. It uses Node's official nightly catalog; the highest supported public semantic versions from the official npm packages, including development prereleases; preview/Insiders/Canary desktop channels; and the newest native normal CPython available to uv, including alphas/betas/RCs. Superseded prereleases and platform-specific npm wrapper releases are excluded. A final release is newer than its own already-superseded alpha. Private builds, arbitrary source commits and unsupported experimental Python variants are not selected.
+It uses Node's official nightly catalog; the highest supported public semantic versions from the official npm packages, including development prereleases; preview/Insiders/Canary desktop channels; and the newest compatible native normal CPython available to uv, including alphas/betas/RCs. Before installing Python, the complete selected pack set is resolved to binary wheels for the actual Windows architecture. Unsupported interpreter versions and resolver evidence are recorded. Network errors do not justify choosing an older interpreter. Exact resolved packages are SHA-256 locked, installed together, and checked through imports and dependency consistency. Superseded prereleases and platform-specific npm wrapper releases are excluded. A final release is newer than its own already-superseded alpha. Private builds, arbitrary source commits and unsupported experimental Python variants are not selected.
 
 WinGet tools are updated to the version offered by their **specific configured catalog/channel**. That may lag the upstream publisher, and a public preview may not exist for an application. The utility records this distinction instead of claiming every component is on a nightly. A failed experimental install is not silently retried on an older stable runtime. Re-running discovers package releases again; it does **not** rewrite this utility's source or learn arbitrary new product migrations by itself.
+
+Completed installer network timeouts (`0x80072EE2`) receive bounded retries of the same exact package and channel. Killed managers, signature/security failures and other errors are not retried. WebView2 presence is checked through Microsoft's documented Evergreen registry values because WinGet can omit that runtime. A known catalog-versus-installed mismatch stays visible as `VERSION_MISMATCH`. npm's actual version is stored separately from its compatibility warnings; a running nightly does not suppress those warnings.
 
 ## Default scope
 

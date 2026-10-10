@@ -31,7 +31,7 @@ import urllib.request
 import uuid
 import zipfile
 
-VERSION = '2.0.1-preview.1'
+VERSION = '2.0.2-preview.1'
 SCHEMA = 'openai-edge-workbench/2'
 ROOT_NAME = 'OpenAI-Edge-Workbench'
 DOCS_MCP = 'https://developers.openai.com/mcp'
@@ -45,6 +45,15 @@ ANSI = re.compile(r'\x1b\[[0-?]*[ -/]*[@-~]')
 SEMVER = re.compile(r'^(?:v|rust-v)?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$')
 PYVER = re.compile(r'^(\d+)\.(\d+)\.(\d+)(?:(a|b|rc)(\d+))?$')
 PRE_CHANNELS = {'alpha','beta','rc','pre','preview','next','canary','nightly','dev','experimental','insider','insiders'}
+PYTHON_PACKS = {
+    'core': ('openai', 'openai-agents'),
+    'documents': ('python-docx','openpyxl','python-pptx','reportlab','pypdf','pymupdf','pillow','pandas','numpy','matplotlib','plotly','duckdb','jupyterlab','nbconvert'),
+    'science': ('biopython','scipy','sympy','scikit-learn'),
+}
+PYTHON_IMPORTS = dict(zip(
+    sum(PYTHON_PACKS.values(), ()),
+    ('openai','agents','docx','openpyxl','pptx','reportlab','pypdf','pymupdf','PIL','pandas','numpy','matplotlib','plotly','duckdb','jupyterlab','nbconvert','Bio','scipy','sympy','sklearn'),
+))
 
 
 def utc() -> str:
@@ -95,6 +104,42 @@ def choose_python(data: list[dict], arch: str) -> dict:
     if not candidates:
         raise ValueError('No normal CPython build for this Windows architecture in the uv catalog.')
     return max(candidates, key=lambda i: python_key(str(i['version'])))
+
+
+def compatible_python_candidates(data: list[dict], arch: str) -> list[dict]:
+    """Latest normal release in each minor; no superseded previews or patch rollback."""
+    cpu = 'aarch64' if arch == 'arm64' else 'x86_64'
+    latest = {}
+    for item in data:
+        key = str(item.get('key', '')); version = str(item.get('version', ''))
+        if not (key.startswith('cpython-') and f'-windows-{cpu}-' in key and '+' not in key and PYVER.fullmatch(version)):
+            continue
+        parsed = python_key(version)
+        if parsed[:2] < (3, 11):
+            continue
+        minor = parsed[:2]
+        if minor not in latest or parsed > python_key(str(latest[minor]['version'])):
+            latest[minor] = item
+    if not latest:
+        raise OperationError('No normal CPython 3.11+ release for this Windows architecture in the uv download catalog.')
+    return sorted(latest.values(), key=lambda item: python_key(str(item['version'])), reverse=True)
+
+
+def selected_python_packages(options: dict) -> list[str]:
+    packages = list(PYTHON_PACKS['core'])
+    if options.get('toolkit'): packages.extend(PYTHON_PACKS['documents'])
+    if options.get('science'): packages.extend(PYTHON_PACKS['science'])
+    return packages
+
+
+def python_resolution_incompatible(result: CommandResult) -> bool:
+    """An actual resolver proof can reject a target; transport/other errors cannot."""
+    out = ANSI.sub('', result.out)
+    transport = r'(?i)(failed to (?:fetch|download|connect)|request failed|certificate|tls|connection (?:reset|refused)|timed? ?out|network is unreachable|\b(?:401|403|429|5\d\d)\b)'
+    return (result.code == 1 and not result.timeout
+            and re.search(r'(?i)no solution found when resolving dependencies', out) is not None
+            and re.search(r'(?i)requirements are unsatisfiable', out) is not None
+            and re.search(transport, out) is None)
 
 
 def version_matches(actual: str, expected: str) -> bool:
@@ -238,7 +283,7 @@ def build_plan(options: dict) -> list[dict]:
     add('node','Node.js official nightly')
     add('codex','Codex CLI - newest public npm build')
     add('openai-cli','Official OpenAI API CLI')
-    add('python','Newest CPython build available through uv')
+    add('python','Newest compatible CPython for selected packs')
     add('javascript','OpenAI JavaScript / Agents / Codex SDKs')
     add('python-packages','OpenAI Python / Agents SDKs')
     add('extensions','Codex, Python and Jupyter preview extensions')
@@ -290,6 +335,13 @@ def atomic_json(path: Path, obj: object) -> None:
     os.replace(tmp,path)
 
 
+def atomic_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True,exist_ok=True)
+    tmp=path.with_name(path.name+'.tmp')
+    tmp.write_text(text,encoding='utf-8')
+    os.replace(tmp,path)
+
+
 def ps_literal(value: object) -> str:
     return "'"+str(value).replace("'","''")+"'"
 
@@ -333,7 +385,7 @@ class Workbench:
         self.run_dir.mkdir(parents=True,exist_ok=True)
         self.report = {'schema':SCHEMA,'workbench_version':VERSION,'started_utc':utc(),
                        'platform':platform.platform(),'simulated':simulate,'run_id':self.run_id,
-                       'policy':'Newest published supported development build; no silent stable retry after a preview fails.',
+                       'policy':'Newest published supported development build. Python is preflight-selected for all requested wheels; no silent stable retry after an installation fails.',
                        'coverage':{},'checks':{},'migrations':{},'limitations':[
                            'Desktop UI, same-account identity, cloud OAuth and individual plugin actions require signed-in checks.',
                            'A successful installer or TCP/HTTP probe is not an end-to-end feature test.',
@@ -370,6 +422,7 @@ class Workbench:
                     'completed':len([x for x in self.results if x['status']!='RUNNING']),
                     'total':len(self.plan) if self.plan else len(build_plan(self.options)),
                     'report_ready':(self.run_dir/'Paste-Into-ChatGPT.txt').exists(),
+                    'terminal_ready':(self.root/'Open-Edge-Terminal.cmd').is_file(),
                     'report_location':str(self.run_dir)}
 
     def run_command(self, argv: list[str|Path], *, timeout: int=900, quiet: bool=False,
@@ -426,11 +479,25 @@ class Workbench:
     @staticmethod
     def ps_args(body: str) -> list[str]:
         exe=str(Path(os.environ.get('SystemRoot',r'C:\Windows'))/'System32'/'WindowsPowerShell'/'v1.0'/'powershell.exe')
-        wrapped="$ErrorActionPreference='Stop'; [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false); "+body
-        return [exe,'-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-EncodedCommand',base64.b64encode(wrapped.encode('utf-16le')).decode()]
+        # Nested Windows PowerShell can inherit PS7 module search paths. Load the
+        # matching native modules and return text, not CLIXML, to JSON consumers.
+        wrapped=("$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; "
+                 "[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false); try { "
+                 "Import-Module ([IO.Path]::Combine($PSHOME,'Modules\\Microsoft.PowerShell.Utility\\Microsoft.PowerShell.Utility.psd1')) -ErrorAction Stop; "
+                 "Import-Module ([IO.Path]::Combine($PSHOME,'Modules\\Microsoft.PowerShell.Security\\Microsoft.PowerShell.Security.psd1')) -ErrorAction Stop; "
+                 "Import-Module ([IO.Path]::Combine($PSHOME,'Modules\\Microsoft.PowerShell.Management\\Microsoft.PowerShell.Management.psd1')) -ErrorAction Stop; "
+                 +body+" } catch { [Console]::Error.WriteLine($_.Exception.Message); exit 1 }")
+        return [exe,'-NoLogo','-NoProfile','-NonInteractive','-OutputFormat','Text','-ExecutionPolicy','Bypass','-EncodedCommand',base64.b64encode(wrapped.encode('utf-16le')).decode()]
 
     def ps(self, body: str, *, timeout=120, label='Windows configuration query') -> CommandResult:
         return self.run_command(self.ps_args(body),timeout=timeout,quiet=True,label=label)
+
+    def ps_json(self, body: str, *, label: str):
+        result=self.require(self.ps(body,label=label),label)
+        try:
+            return json.loads(result.out.lstrip('\ufeff'))
+        except (ValueError,TypeError) as exc:
+            raise OperationError(label+' did not return valid JSON; no dependent configuration was changed.') from exc
 
     def require(self,result:CommandResult,what:str) -> CommandResult:
         if result.timeout: raise StopRun(what+' timed out; remaining operations stopped.')
@@ -553,9 +620,17 @@ class Workbench:
         except Exception as exc:
             self.report['fatal_error']=redact(str(exc));self.log(str(exc),'error')
         finally:
-            self.finished=True;self.current='Stopped' if self.cancel.is_set() else 'Finished'
-            self.report['finished_utc']=utc();self.write_report(final=True)
-            self.log('Report ready: Paste-Into-ChatGPT.txt. Review it before sharing.')
+            with self.lock:
+                self.current='Stopped' if self.cancel.is_set() else 'Finished'
+                self.report['finished_utc']=utc()
+                try:
+                    self.write_report(final=True)
+                except OSError as exc:
+                    self.report['report_error']=redact(str(exc))
+                    self.log('Final report could not be saved: '+redact(str(exc)),'error')
+                finally:self.finished=True
+            if not self.report.get('report_error'):
+                self.log('Report ready: Paste-Into-ChatGPT.txt. Review it before sharing.')
 
     def write_report(self,*,final:bool):
         with self.lock:
@@ -572,8 +647,8 @@ class Workbench:
             safe_data=scrub(data)
             atomic_json(self.run_dir/'Diagnostic.json',safe_data)
             text='=== BEGIN OPENAI EDGE DIAGNOSTIC ===\n'+json.dumps(safe_data,ensure_ascii=False,indent=2)+'\n=== END OPENAI EDGE DIAGNOSTIC ===\n'
-            (self.run_dir/'Paste-Into-ChatGPT.txt').write_text(text,encoding='utf-8')
-            (self.root/'LATEST-REPORT.txt').write_text(str(self.run_dir/'Paste-Into-ChatGPT.txt'),encoding='utf-8')
+            atomic_text(self.run_dir/'Paste-Into-ChatGPT.txt',text)
+            atomic_text(self.root/'LATEST-REPORT.txt',str(self.run_dir/'Paste-Into-ChatGPT.txt'))
 
     def step_inventory(self):
         self.arch=architecture()
@@ -607,6 +682,35 @@ class Workbench:
         self.report['coverage']['classic_app']='Classic is not removed automatically: cloud identity and unsynced local data cannot be verified by an installer.'
         self.current_result['detail']='Inventory captured; local configuration backup made without exporting its contents.'
 
+    def webview_registration(self) -> list[dict]:
+        # Evergreen may be hidden from WinGet's installed-app inventory. Microsoft
+        # documents these EdgeUpdate pv values as the runtime presence check.
+        key=r'SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+        body=r"""$locations=@(
+          @{Hive='LocalMachine';View='Registry32';Location='HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'},
+          @{Hive='CurrentUser';View='Default';Location='HKEY_CURRENT_USER\Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'}
+        ); $found=@(foreach($location in $locations) {
+          $base=$null; $key=$null
+          try {
+            $hive=[Enum]::Parse([Microsoft.Win32.RegistryHive],$location.Hive)
+            $view=[Enum]::Parse([Microsoft.Win32.RegistryView],$location.View)
+            $base=[Microsoft.Win32.RegistryKey]::OpenBaseKey($hive,$view)
+            $key=$base.OpenSubKey(KEY_PATH,$false)
+            if($key) {
+              $pv=$key.GetValue('pv',$null,[Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+              if($pv -is [string]) { [pscustomobject]@{location=$location.Location;version=$pv} }
+            }
+          } finally { if($key){$key.Dispose()}; if($base){$base.Dispose()} }
+        }); ConvertTo-Json -InputObject @($found) -Compress""".replace('KEY_PATH',ps_literal(key))
+        result=self.require(self.ps(body,label='Verify WebView2 Evergreen EdgeUpdate registry registration'),'WebView2 registration query')
+        try:
+            rows=json.loads(result.out)
+        except ValueError as exc:
+            raise OperationError('WebView2 registration query returned invalid JSON; runtime presence is not verified.') from exc
+        if not isinstance(rows,list) or any(not isinstance(row,dict) for row in rows):
+            raise OperationError('WebView2 registration query returned an unexpected result; runtime presence is not verified.')
+        return [row for row in rows if re.fullmatch(r'\d+\.\d+\.\d+\.\d+',str(row.get('version',''))) and any(int(n)>0 for n in row['version'].split('.'))]
+
     def install_winget(self,item:dict):
         wing=self.find('winget.exe')
         if not wing:raise OperationError('Microsoft App Installer / WinGet is unavailable. Open Microsoft Store and install App Installer, then rerun.')
@@ -626,8 +730,20 @@ class Workbench:
         action='upgrade' if before.code==0 else 'install'
         args=[wing,action,*common,'--accept-package-agreements','--silent']
         if action=='upgrade':args+=['--include-unknown']
-        r=self.run_command(args,timeout=1200,label=action+' '+item['name']+' ['+item['channel']+']')
-        if r.timeout:raise StopRun('WinGet timed out. Another installer process may still be running.')
+        for attempt in range(3):
+            if self.cancel.is_set():raise StopRun('Stopped before the next WinGet attempt.')
+            suffix=(' (retry '+str(attempt)+')') if attempt else ''
+            r=self.run_command(args,timeout=1200,label=action+' '+item['name']+' ['+item['channel']+']'+suffix)
+            if r.timeout:raise StopRun('WinGet timed out. Another installer process may still be running.')
+            # A completed installer reporting WININET_E_TIMEOUT can be retried.
+            # Do not retry a killed manager, signature errors, policy failures, or
+            # arbitrary installer errors, and retain exactly the selected channel.
+            transient=(r.code & 0xffffffff)==0x80072EE2
+            if not transient or attempt==2:break
+            delay=(5,15)[attempt]
+            self.current_result.setdefault('retries',[]).append({'attempt':attempt+1,'reason':'WININET_E_TIMEOUT (0x80072EE2)','delay_seconds':delay,'package':item['package'],'source':item['source'],'channel':item['channel']})
+            self.log('The selected package installer reported a network timeout. Retrying the same package and channel in '+str(delay)+' seconds.','warning')
+            if self.cancel.wait(delay):raise StopRun('Stopped during the WinGet retry delay.')
         # WinGet's no-applicable-update code is not a network/install success.
         no_update=(r.code & 0xffffffff)==0x8A15002B and before.code==0
         if r.code not in (0,3010,1641) and not no_update:
@@ -635,11 +751,19 @@ class Workbench:
         self.refresh_path()
         after=self.run_command([wing,'list',*common],quiet=True,timeout=90,label='Verify registered package: '+item['package'])
         actual=parse_list(after.out)
+        if item['id']=='webview':
+            registrations=self.webview_registration()
+            self.current_result['registration_check']={'method':'Microsoft-documented EdgeUpdate Clients pv registry values','registrations':registrations,'winget_inventory_exit_code':after.code}
+            if not registrations:raise OperationError('Installer returned, but neither the per-user nor per-machine WebView2 Evergreen registry key contains a valid runtime version.')
+            actual=max((row['version'] for row in registrations),key=lambda version:tuple(map(int,version.split('.'))))
         self.current_result['actual']=actual or ('present; exact version not parsed' if after.code==0 else 'not found')
-        if after.code!=0:raise OperationError('Installer returned, but registration could not be confirmed. '+redact(after.out[-1200:]))
+        if after.code!=0 and item['id']!='webview':raise OperationError('Installer returned, but registration could not be confirmed. '+redact(after.out[-1200:]))
         if actual and available and actual.lstrip('v')==available[0].lstrip('v'):
             self.current_result['status']='VERIFIED'
             self.current_result['detail']='Registered version matches the selected package catalog. Desktop UI not exercised.'
+        elif no_update and actual and available:
+            self.current_result['status']='VERSION_MISMATCH'
+            self.current_result['detail']='WinGet reports no applicable update, but registered version '+actual+' differs from selected catalog version '+available[0]+'. Latestness is not verified; the original package and channel were preserved.'
         elif no_update:
             self.current_result['status']='CATALOG_CURRENT'
             self.current_result['detail']='WinGet reports no applicable update; package registration confirmed. Independent upstream latestness not proved.'
@@ -681,9 +805,19 @@ class Workbench:
         self.env['PATH']=str(exe.parent)+os.pathsep+self.env.get('PATH','')
         self.activate('node',version,[exe],source)
         nr=self.require(self.run_command([exe,npmjs,'--version'],timeout=40,label='Test bundled npm'),'Bundled npm')
-        self.active['npm']={'version':nr.out.strip(),'command':[str(exe),str(npmjs)],'source':'Bundled with official Node nightly'}
+        npm_lines=[clean for line in nr.out.splitlines() if (clean:=ANSI.sub('',line).strip())]
+        npm_versions=[line for line in npm_lines if line[0].isdigit() and SEMVER.fullmatch(line)]
+        if len(npm_versions)!=1:raise OperationError('Bundled npm did not return one unambiguous version line. Its diagnostic output was not stored as a version.')
+        npm_version=npm_versions[0]
+        npm_diagnostics=[line for line in npm_lines if line!=npm_version]
+        self.active['npm']={'version':npm_version,'command':[str(exe),str(npmjs)],'source':'Bundled with official Node nightly','diagnostics':npm_diagnostics}
         self.save_state()
         self.current_result['detail']='Nightly archive checksum and actual Node/npm execution verified.'
+        if npm_diagnostics:
+            self.current_result['npm_diagnostics']=npm_diagnostics
+            self.current_result['status']='REVIEW_NEEDED'
+            self.current_result['detail']+=' npm emitted diagnostics; successful execution does not establish declared engine compatibility.'
+            for diagnostic in npm_diagnostics:self.log(diagnostic,'warning')
 
     def npm_command(self) -> list[str]:
         command=self.active.get('npm',{}).get('command')
@@ -754,11 +888,13 @@ class Workbench:
         uv=self.find('uv.exe')
         if not uv:raise OperationError('uv is unavailable. Repair the uv installation first.')
         self.uv=uv
-        catalog=self.require(self.run_command([uv,'python','list','--all-versions','--output-format','json'],quiet=True,timeout=120,label='Discover available CPython including prereleases'),'uv Python catalog')
-        data=json.loads(catalog.out);selected=choose_python(data,(getattr(self,'arch',None) or architecture()))
+        catalog=self.require(self.run_command([uv,'python','list','--all-versions','--only-downloads','--output-format','json'],quiet=True,timeout=120,label='Discover published CPython downloads including prereleases'),'uv Python catalog')
+        data=json.loads(catalog.out)
+        arch=getattr(self,'arch',None) or architecture()
+        selected=self.preflight_python(data,arch,uv)
         version=selected['version'];key=selected['key']
         self.current_result['expected']=version
-        self.require(self.run_command([uv,'python','install',key],timeout=1200,label='Install selected CPython '+version),'CPython installation')
+        self.require(self.run_command([uv,'python','install','--no-bin','--no-registry',key],timeout=1200,label='Install compatible selected CPython '+version),'CPython installation')
         directory=self.root/'environments'/('python-'+version+'-'+self.run_id)
         assert_regular_path(directory)
         py=directory/'Scripts/python.exe'
@@ -767,8 +903,57 @@ class Workbench:
         checked=self.require(self.run_command([py,'-c','import platform; print(platform.python_version())'],timeout=40,label='Verify Python build'),'Python execution')
         if not version_matches(checked.out,version):raise OperationError('Python interpreter does not match selected release.')
         atomic_json(directory/'.workbench-owned.json',{'owned_by':SCHEMA,'version':version})
-        self.python_candidate={'version':version,'command':[str(py)],'source':'uv catalog; isolated candidate'}
-        self.current_result['detail']='Newest listed native CPython selected; SDK environment is isolated from existing projects.'
+        self.python_candidate={'version':version,'command':[str(py)],'source':'uv download catalog; full selected package compatibility preflight',
+            'requirements_sha256':self.report['python_compatibility']['requirements_sha256'],'packages':selected_python_packages(self.options)}
+        self.current_result['actual']=version
+        self.current_result['detail']='Newest CPython with a complete binary-wheel solution for the selected packs; prereleases included in the search. Compatibility choice was recorded before installation.'
+
+    def preflight_python(self, data: list[dict], arch: str, uv: str) -> dict:
+        packages=selected_python_packages(self.options)
+        source=self.run_dir/'Python-selected-packages.in'
+        assert_regular_path(source)
+        source.write_text('\n'.join(packages)+'\n',encoding='utf-8')
+        target='aarch64-pc-windows-msvc' if arch=='arm64' else 'x86_64-pc-windows-msvc'
+        evidence={'policy':'Newest published normal CPython minor with a complete compatible wheel solution, including development releases. Selection occurs before installation; no retry after a failed install.',
+                  'packages':packages,'target':target,'index':'https://pypi.org/simple','attempts':[]}
+        self.report['python_compatibility']=evidence
+        candidates=compatible_python_candidates(data,arch)
+        for candidate in candidates:
+            if self.cancel.is_set():raise StopRun('Stopped before Python compatibility preflight.')
+            version=str(candidate['version'])
+            lock=self.run_dir/('Python-resolved-'+version+'.txt')
+            assert_regular_path(lock)
+            result=self.run_command([uv,'pip','compile',source,'--python',sys.executable,
+                '--python-version',version,'--python-platform',target,'--no-python-downloads',
+                '--prerelease','allow','--resolution','highest','--default-index','https://pypi.org/simple',
+                '--only-binary',':all:','--generate-hashes','--no-header','--no-annotate',
+                '--output-file',lock],quiet=True,timeout=900,label='Preflight complete selected Python packs for CPython '+version)
+            attempt={'version':version,'key':candidate['key'],'exit_code':result.code}
+            evidence['attempts'].append(attempt)
+            if result.timeout:raise StopRun('Python compatibility resolution timed out; no interpreter was selected.')
+            if result.code==0:
+                if not lock.is_file():raise OperationError('Python resolver did not produce its requirements lock. No interpreter was selected.')
+                content=lock.read_bytes()
+                pins=dict(re.findall(r'^([A-Za-z0-9_.-]+)==([^\s;\\]+)',content.decode('utf-8'),re.M))
+                if not all(package in pins for package in packages) or b'--hash=sha256:' not in content:
+                    raise OperationError('Python compatibility lock is incomplete or unhashed. No interpreter was selected.')
+                attempt['status']='COMPATIBLE'
+                evidence.update({'selected_version':version,'selected_key':candidate['key'],
+                    'newest_catalog_version':str(candidates[0]['version']),
+                    'selection_reason':'Newest catalog release whose entire selected package set resolves to compatible binary wheels.',
+                    'requirements_sha256':hashlib.sha256(content).hexdigest(),
+                    'requirements_lock':str(lock),'resolved_versions':pins})
+                self.python_requirements_lock=lock
+                self.log('Python compatibility preflight selected '+version+' for all '+str(len(packages))+' requested packages before installing an interpreter.')
+                self.current_result['compatibility']=evidence
+                return candidate
+            if python_resolution_incompatible(result):
+                attempt.update({'status':'INCOMPATIBLE','reason':redact(result.out[-6000:])})
+                self.log('CPython '+version+' has no complete binary-wheel solution for the selected packs; recorded resolver proof.','warning')
+                continue
+            attempt.update({'status':'PREFLIGHT_ERROR','reason':redact(result.out[-2000:])})
+            self.require(result,'Python compatibility preflight; an operational error cannot justify selecting an older release')
+        raise OperationError('No published CPython 3.11+ release resolves the complete selected package set to binary wheels. See python_compatibility resolver evidence. Existing environments remain selected.')
 
     def install_python_packages(self, packages: list[str]):
         try:
@@ -781,29 +966,31 @@ class Workbench:
         py=(self.python_candidate or {}).get('command',[None])[0]
         uv=self.find('uv.exe')
         if not uv or not py or not Path(py).is_file():raise OperationError('Managed Python/uv unavailable. No default interpreter was modified.')
-        installed=[];failed=[]
-        for package in packages:
-            if self.cancel.is_set():raise StopRun('Stopped after current package operation.')
-            r=self.run_command([uv,'pip','install','--python',py,'--prerelease','allow','--upgrade',
-                '--default-index','https://pypi.org/simple','--only-binary',':all:',package],timeout=900,
-                label='Upgrade isolated Python package (prereleases allowed): '+package)
-            if r.timeout:raise StopRun('Python package installation timed out.')
-            if r.code==0:installed.append(package)
-            else:failed.append(package)
-        code='import importlib.metadata as m,json; names='+repr(installed)+'; print(json.dumps({n:m.version(n) for n in names}))'
-        versions=self.run_command([py,'-c',code],quiet=True,timeout=60,label='Read installed package versions')
-        if versions.code==0:
-            with contextlib.suppress(ValueError):self.current_result['versions']=json.loads(versions.out)
-        check=self.run_command([uv,'pip','check','--python',py],timeout=120,label='Check SDK dependency consistency')
-        self.current_result['expected']='Latest compatible published distributions; prereleases enabled; binary wheels only'
-        if failed:raise OperationError('No successful installation for: '+', '.join(failed)+'. The newest Python may lack compatible wheels. No older Python fallback was substituted.')
-        self.require(check,'Python dependency consistency')
-        self.current_result['detail']='Installed package metadata and dependency consistency checked; individual APIs have not all been exercised.'
+        lock=getattr(self,'python_requirements_lock',None)
+        if not lock or not Path(lock).is_file():raise OperationError('Complete selected Python pack compatibility lock is missing. Rerun Python preflight; no unplanned resolution was attempted.')
+        if hashlib.sha256(Path(lock).read_bytes()).hexdigest()!=self.python_candidate.get('requirements_sha256'):
+            raise OperationError('Python compatibility lock changed after selection; candidate was not installed.')
+        if not getattr(self,'python_lock_installed',False):
+            if self.cancel.is_set():raise StopRun('Stopped before installing Python packages.')
+            self.require(self.run_command([uv,'pip','install','--python',py,'--default-index','https://pypi.org/simple',
+                '--only-binary',':all:','--require-hashes','--requirements',lock],timeout=1800,
+                label='Install exact preflight-resolved full selected Python pack set'),'Resolved Python package installation; no older interpreter retry')
+            self.require(self.run_command([uv,'pip','check','--python',py],timeout=120,label='Check complete Python pack dependency consistency'),'Python dependency consistency')
+            self.python_lock_installed=True
+        imports=[PYTHON_IMPORTS[name] for name in packages]
+        code='import importlib,importlib.metadata as m,json; names='+repr(packages)+'; modules='+repr(imports)+'; [importlib.import_module(n) for n in modules]; print(json.dumps({n:m.version(n) for n in names}))'
+        versions=self.require(self.run_command([py,'-c',code],quiet=True,timeout=180,label='Verify selected Python package imports and installed versions'),'Python package imports')
+        actual=json.loads(versions.out.splitlines()[-1])
+        expected=self.report['python_compatibility']['resolved_versions']
+        if any(actual.get(name)!=expected.get(name) for name in packages):raise OperationError('Installed Python packages do not match the compatibility lock.')
+        self.current_result['versions']=actual
+        self.current_result['expected']='Exact preflight-resolved published versions; prereleases allowed; SHA-256 locked binary wheels'
+        self.current_result['detail']='All selected packs installed together from the compatibility lock. This pack imports successfully and its versions match; individual APIs have not all been exercised.'
 
-    def step_python_packages(self):self.install_python_packages(['openai','openai-agents'])
+    def step_python_packages(self):self.install_python_packages(list(PYTHON_PACKS['core']))
     def step_documents(self):
-        self.install_python_packages(['python-docx','openpyxl','python-pptx','reportlab','pypdf','pymupdf','pillow','pandas','numpy','matplotlib','plotly','duckdb','jupyterlab','nbconvert'])
-    def step_science(self):self.install_python_packages(['biopython','scipy','sympy','scikit-learn'])
+        self.install_python_packages(list(PYTHON_PACKS['documents']))
+    def step_science(self):self.install_python_packages(list(PYTHON_PACKS['science']))
 
     def install_js_packages(self,packages:list[str]):
         base=self.root/'environments'/('javascript-'+self.run_id)
@@ -999,7 +1186,6 @@ class Workbench:
             py=candidate['command'][0]
             smoke=self.run_command([py,'-c',"import openai,agents;print('SDK_IMPORT_OK')"],quiet=True,timeout=60,label='Verify Python OpenAI SDK imports')
             checks['python_sdk_imports']={'passed':smoke.code==0 and 'SDK_IMPORT_OK' in smoke.out,'exit_code':smoke.code}
-        self.step_report()
         self.current_result['detail']='Recorded separate checks for binary execution, SDK import, local routing, sign-in and transport. Cloud plugin actions and desktop UI remain unverified.'
         self.current_result['status']='REVIEW_NEEDED'
 
@@ -1084,14 +1270,24 @@ class Workbench:
         if os.name=='nt':
             # Only the tool shim directory is added; no broad global runtime replacement.
             previous=self.root/'private-backups'/'user-path-before-workbench.json'
+            assert_regular_path(previous)
             if not previous.exists():
-                saved=self.ps("[pscustomobject]@{path=[Environment]::GetEnvironmentVariable('Path','User')} | ConvertTo-Json -Compress",label='Back up original user PATH')
-                if saved.code!=0:raise OperationError('User PATH backup failed; PATH was not changed.')
-                atomic_json(previous,json.loads(saved.out))
+                saved=self.ps_json("[pscustomobject]@{path=[Environment]::GetEnvironmentVariable('Path','User')} | ConvertTo-Json -Compress",label='Back up original user PATH')
+                if not isinstance(saved,dict) or 'path' not in saved or (saved['path'] is not None and not isinstance(saved['path'],str)):
+                    raise OperationError('User PATH backup has an invalid shape; PATH was not changed.')
+                atomic_json(previous,saved)
+            try:
+                saved=json.loads(previous.read_text(encoding='utf-8'))
+            except (OSError,ValueError) as exc:
+                raise OperationError('Existing user PATH backup is unreadable; PATH was not changed.') from exc
+            if not isinstance(saved,dict) or 'path' not in saved or (saved['path'] is not None and not isinstance(saved['path'],str)):
+                raise OperationError('Existing user PATH backup has an invalid shape; PATH was not changed.')
             p=ps_literal(bin_dir)
             code="$p="+p+"; $old=[Environment]::GetEnvironmentVariable('Path','User'); $parts=@($old -split ';' | Where-Object {$_ -and $_.TrimEnd('\\') -ine $p.TrimEnd('\\')}); [Environment]::SetEnvironmentVariable('Path',(($p)+ ';'+($parts -join ';')),'User'); 'USER_PATH_UPDATED'"
             r=self.ps(code,label='Make managed CLI shims available to future user processes')
-            self.report['checks']['user_path_update']={'passed':r.code==0,'scope':'Only Workbench bin prepended to USER Path. Machine PATH may still shadow it; use Edge Terminal.'}
+            self.report['checks']['user_path_update']={'passed':r.code==0 and 'USER_PATH_UPDATED' in r.out,'scope':'Only Workbench bin prepended to USER Path. Machine PATH may still shadow it; use Edge Terminal.'}
+            if not self.report['checks']['user_path_update']['passed']:
+                raise OperationError('Managed tool launchers were written, but the user PATH update was not confirmed. Use Open-Edge-Terminal.cmd.')
             self.report['checks']['restart_apps']='Close and reopen ChatGPT/editor/terminals to inherit environment changes. No application was force-closed.'
             shortcut_code="$w=New-Object -ComObject WScript.Shell; $desktop=[Environment]::GetFolderPath('Desktop'); $s=$w.CreateShortcut((Join-Path $desktop 'OpenAI Edge Terminal.lnk')); $s.TargetPath="+ps_literal(terminal)+"; $s.WorkingDirectory="+ps_literal(workspace)+"; $s.Save()"
             self.ps(shortcut_code,label='Create Edge Terminal desktop shortcut')

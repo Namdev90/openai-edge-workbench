@@ -1,6 +1,6 @@
 """Build a deterministic self-contained launcher and its readable-source manifest."""
 from pathlib import Path
-import base64, hashlib, io, json, textwrap, zipfile
+import base64, hashlib, io, json, re, textwrap, zipfile
 root=Path(__file__).resolve().parents[1]
 files=sorted(p for p in (root/'source').rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.suffix in {'.py','.ps1','.js','.html','.css','.md'})
 payload=io.BytesIO()
@@ -17,6 +17,7 @@ assert len(line)<8191,'CMD command-line limit exceeded'
 header='@echo off\r\nsetlocal DisableDelayedExpansion\r\nset "EDGE_SELF=%~f0"\r\n'+line+'\r\nexit /b %errorlevel%\r\n\r\n::EDGE_PAYLOAD\r\n'
 cmd=(header+'\r\n'.join(textwrap.wrap(base64.b64encode(data).decode(),76))+'\r\n').encode('ascii')
 (root/'OpenAI-Edge-Workbench.cmd').write_bytes(cmd)
-manifest={'schema':1,'version':'2.0.1-preview.1','launcherSha256':hashlib.sha256(cmd).hexdigest(),'payloadSha256':digest,'setupSha256':hashlib.sha256((root/'Setup.ps1').read_bytes()).hexdigest(),'sourceFiles':{p.relative_to(root/'source').as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in files}}
+version=re.search(r"(?m)^VERSION = '([^']+)'$",(root/'source/engine.py').read_text())[1]
+manifest={'schema':1,'version':version,'launcherSha256':hashlib.sha256(cmd).hexdigest(),'payloadSha256':digest,'setupSha256':hashlib.sha256((root/'Setup.ps1').read_bytes()).hexdigest(),'sourceFiles':{p.relative_to(root/'source').as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in files}}
 (root/'release.json').write_bytes((json.dumps(manifest,indent=2)+'\n').encode())
 print(f'Built {len(files)} source files; launcher {len(cmd)} bytes; command line {len(line)} characters')

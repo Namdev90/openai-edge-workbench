@@ -1,5 +1,6 @@
 import http.client,json,tempfile,threading,time,unittest
 from pathlib import Path
+from unittest.mock import patch
 import app
 import engine
 
@@ -42,6 +43,43 @@ class DashboardTests(unittest.TestCase):
         status,data=self.request('GET','/api/report')
         self.assertEqual(status,200);self.assertIn(b'"simulated": true',data)
         self.assertNotIn(b'test-capability',data)
+    def test_concurrent_report_reads_remain_complete_through_final_update(self):
+        self.w.write_report(final=False)
+        report_path=self.w.run_dir/'Paste-Into-ChatGPT.txt'
+        original_read=Path.read_bytes
+        def hold_report_read(path):
+            if path!=report_path:return original_read(path)
+            # Keep the Windows read handle open long enough to overlap a write
+            # unless the endpoint shares the Workbench report lock.
+            with path.open('rb') as stream:
+                content=stream.read()
+                time.sleep(.02)
+                return content
+        def read_complete_report():
+            status,content=self.request('GET','/api/report')
+            self.assertEqual(status,200)
+            lines=content.decode('utf-8').splitlines()
+            self.assertGreaterEqual(len(lines),3,'Report must never be empty or partial')
+            self.assertEqual(lines[0],'=== BEGIN OPENAI EDGE DIAGNOSTIC ===')
+            self.assertEqual(lines[-1],'=== END OPENAI EDGE DIAGNOSTIC ===')
+            return json.loads('\n'.join(lines[1:-1]))
+        observed_intermediate=0
+        with patch.object(Path,'read_bytes',hold_report_read):
+            self.assertEqual(self.request('POST','/api/start',{'science':False,'browser':False},origin=self.origin)[0],200)
+            deadline=time.monotonic()+10
+            while time.monotonic()<deadline:
+                report=read_complete_report()
+                observed_intermediate+=not report['final']
+                if self.w.snapshot()['finished']:break
+            self.assertTrue(self.w.snapshot()['finished'],'Simulation did not finish before the deadline')
+            final=read_complete_report()
+        self.assertGreater(observed_intermediate,0,'Expected reads during report updates')
+        self.assertTrue(final['final'])
+        self.assertTrue(final['simulated'])
+        self.assertNotIn('fatal_error',final)
+        self.assertNotIn('report_error',self.w.report)
+        self.assertEqual(len(final['results']),len(self.w.plan))
+        self.assertEqual({row['status'] for row in final['results']},{'SIMULATED'})
     def test_readme_index_available(self):
         status,data=self.request('GET','/')
         self.assertEqual(status,200);self.assertIn(b'OpenAI Edge Workbench',data)

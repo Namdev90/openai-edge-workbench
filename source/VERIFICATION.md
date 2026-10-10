@@ -1,28 +1,29 @@
 # Verification record
 
-Build: OpenAI Edge Workbench 2.0.1-preview.1, 10 October 2026.
+Build: OpenAI Edge Workbench 2.0.2-preview.1, 10 October 2026.
 
-## Executed
+## Application checks
 
-- `python -m py_compile app.py engine.py`: passed in Python 3.13.
-- `python -m unittest discover -s tests -v`: **42 tests passed**. Covers release selection, superseded previews, architecture filtering, redaction, ZIP traversal, migration conflict preservation, unowned cleanup retention, process-exit evidence, installer-result/registered-version mismatches, report serialization, explicit simulation labeling, local HTTP authentication, origin and Host checks, unknown actions, and second-worker rejection.
-- `node --check app.js`: passed.
-- Chromium offline UI fixture connected through a test bridge to the actual loopback HTTP API: setup/start, 30 simulated result rows, copy-report flow, desktop rendering and 390-pixel mobile layout checked. No JavaScript errors or mobile horizontal overflow observed.
-- Direct Chromium navigation to loopback was blocked by the build environment's administrator policy. That policy was **not changed**. The offline UI fixture and separate real loopback HTTP tests are not a claim of a full Windows browser launch.
-- Real installed uv CLI exercised for `python list --all-versions --all-platforms --output-format json`; confirms the catalog schema consumed by the selector. This is a schema check, not a current Windows version result.
-- Packager verifies the embedded payload SHA-256, safe archive paths, source byte-for-byte matches, CMD payload reconstruction, source ZIP integrity and command-line length constraints. See `SHA256SUMS.txt` beside the release artifacts.
+81 regression tests pass locally on Windows. Coverage includes interpreter selection with a full selected-pack wheel solution, explicit resolution rejection versus transport errors, hashed package locks, pack imports and version matching, candidate preservation, exact-channel timeout retries, WebView2 registry verification, catalog mismatches, native PowerShell JSON under a foreign module search path, safe original PATH backups, npm version/warning separation, and concurrent HTTP report reads while reports are replaced.
 
-## Not executed or established
+Existing coverage also checks architecture/release selection, secret redaction, archive traversal, Windows junctions, configuration conflict preservation, ownership-limited cleanup, process exit evidence, local capability/origin/Host checks, simulation labeling, and rejection of a second worker. An independent Astra review ran the suite and checked the fixes.
 
-- Windows PowerShell parsing/execution of the bootstrap and self-extraction loader.
-- Actual Windows Store/WinGet installation, UAC interaction, user PATH changes, desktop shortcuts, app migration or browser launching on the user's laptop.
-- Real downloads of all target prerelease binaries or complete Windows package compatibility.
-- A real authenticated Codex request, third-party OAuth, all plugin operations, account synchronization, desktop feature availability or private-beta entitlement.
+The JavaScript parser check passes. The release build regenerates every embedded source byte and its SHA-256 manifest. CI runs application and payload tests on Windows and Linux; Windows additionally runs the 12 setup/security tests under Windows PowerShell 5.1 and PowerShell 7 plus real CMD extraction and NoLaunch bootstrap.
 
-The generated utility includes bounded runtime checks and partial reports for these cases. A successful build/test record is not a certificate that the user's laptop has been repaired. Review the first laptop diagnostic before considering removals or broader migrations.
+## Real resolver and installation evidence
 
-## Standalone review, 10 October 2026
+The installed uv executable was exercised against the complete selected package set. CPython 3.15.0 was rejected because DuckDB has no matching cp315 wheel. CPython 3.14.8 resolved all 143 dependencies. Core OpenAI SDKs alone resolve on 3.15.0, so disabling optional packs can retain the newer interpreter. A development target was also accepted as a target argument and rejected for a proven wheel incompatibility. These are runtime observations, not permanent version pins.
 
-The reviewed 2.0.1-preview.1 build passed 48 application regression tests on the local Windows machine, including real junction fixtures and failed candidate preservation. Twelve setup/payload tests passed under Windows PowerShell 5.1 and PowerShell 7. Embedded source is regenerated from readable files and checked byte-for-byte without a portability exception. PowerShell bootstrap and extraction are also exercised with NoLaunch, using an existing Python, without installing toolkit applications or making model calls.
+The supplied initial laptop diagnostic confirmed exact Codex alpha execution, configured ChatGPT login, a real authenticated model round trip, matching Playwright browser launch, and many installed package versions. It also identified two preview network timeouts, hidden WebView2 registration, an incompatible document wheel, and failed PATH/report generation. The targeted repair records actual results separately in the local diagnostic directory; private laptop reports are not committed to this public repository.
 
-Earlier verification above describes the original 2.0.0 build. Full package installation, user migrations, Store/UAC interactions, authenticated model access and complete cloud connections remain unverified until the actual installation report is reviewed.
+Native registry verification confirmed the reported WebView2 version independently of WinGet inventory. Actual npm execution reproduced its nightly engine warning; the version remains clean while the warning is preserved. A passing process startup does not establish npm's declared compatibility.
+
+## Limits
+
+Offline tests and installer registration do not establish every desktop feature, plugin action, OAuth connection, same-account identity across apps, or cloud synchronization. The initial model round trip is evidence only for that CLI/provider configuration. Repair verification does not repeat a quota-consuming model request automatically.
+
+Package catalog availability and network failures remain visible. The utility does not suppress signature checks, reset security or organization policy, remove original applications, overwrite project environments, or export credentials. Existing configuration contents and private backups stay local.
+
+## Earlier builds
+
+The initial 2.0.0 build had 42 offline tests and a simulated browser fixture. The standalone 2.0.1-preview.1 review had 48 application tests and 12 setup/security tests, plus verified download/extraction/NoLaunch paths. Those earlier checks did not by themselves establish a complete laptop installation. This repair was driven by the subsequent real diagnostic.
