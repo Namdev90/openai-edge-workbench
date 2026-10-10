@@ -14,7 +14,7 @@ class RegressionTests(unittest.TestCase):
             (b/'snippets').symlink_to(out,target_is_directory=True)
             result=engine.merge_missing(a,b)
             self.assertFalse((out/'code.json').exists())
-            self.assertIn('snippets/code.json',result['skipped'])
+            self.assertIn('snippets/code.json', [Path(p).as_posix() for p in result['skipped']])
     def test_process_start_failure_records_evidence(self):
         with tempfile.TemporaryDirectory() as t:
             w=engine.Workbench(Path(t));w.current_result={}
