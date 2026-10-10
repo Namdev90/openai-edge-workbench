@@ -28,10 +28,16 @@
   "design": {
     "colorMode": "dark",
     "colors": {
-      "ink": "warm off-white",
-      "surface": "graphite and brushed titanium",
-      "accent": "cyan",
-      "attention": "amber"
+      "background": "#070B18",
+      "surface": "#0E1730",
+      "raised": "#172544",
+      "cyan": "#6EE7FF",
+      "violet": "#AD92FF",
+      "ink": "#E8EEFF",
+      "muted": "#A7B4D4",
+      "warning": "#FFD18A",
+      "error": "#FF95AA",
+      "success": "#86EFCA"
     },
     "typography": {
       "body": "Segoe UI, Arial",
@@ -78,6 +84,10 @@
     {
       "date": "2026-10-10",
       "decision": "User requested hyperrealistic skeuomorphism: a tactile instrument console with coherent lighting, brushed metal, recessed displays and physical switches."
+    },
+    {
+      "date": "2026-10-11",
+      "decision": "Match the GitHub repository and local dashboard with a futuristic midnight-blue, electric-cyan and violet identity while preserving tactile hardware controls."
     }
   ],
   "evidence": [
@@ -89,6 +99,15 @@
         "https://21st.dev/@bidyut10/components/three-d-button"
       ],
       "use": "Visual direction only. Existing native components are retained; no third-party component code retrieved or copied."
+    },
+    {
+      "source": "21st search",
+      "query": "futuristic midnight cyan violet developer console",
+      "results": [
+        "https://21st.dev/@serafimcloud/components/violet-nocturne",
+        "https://21st.dev/@serafimcloud/components/violet-starlight"
+      ],
+      "use": "Visual reference leads only; original CSS and SVG retain native project components without dependencies."
     }
   ],
   "generatedAt": "2026-10-10T16:24:02.371Z"

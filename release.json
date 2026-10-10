@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "version": "3.0.0-preview.3",
-  "launcherSha256": "caa0ab401a16b8e138169c8bc8c7e46063278ac532c4566d5cd9a62a93336d6f",
-  "payloadSha256": "02971763d0f1ccbe03431d1de94d4e550cfd78bb58ee71d7e0ef697d1777d670",
+  "version": "3.0.0-preview.4",
+  "launcherSha256": "b7d74b2252234196a3a43f2e77dcf0ae2e83b6ee428f2019c7723d4f775291e2",
+  "payloadSha256": "5e621b86bc0718a356097dc34ec8a1a83394508baaddde6268ddeffabe0ba912",
   "setupSha256": "2360295d3d44f19d5e39ea2f48a774833720ca4d26f9b1ccb1a86c25540cdd04",
   "setupLauncherSha256": "e865b06f13db32de9401d31c79ab1ee508550f99c036ad20093f47179c4e919a",
   "sourceFiles": {
@@ -12,15 +12,15 @@
     "bootstrap.ps1": "d05a1a659ceb8687e159406bff72b6139becda99ba1ed646261c13ec4a4a44fc",
     "docs/DESIGN.md": "56a3d0c02f1f493a28a458ea24ed1df6763e826b2e5c68374de58ab826b2fbce",
     "docs/PLAN.md": "97c8989684525794c32f92b857565a975ba6e8c6dae91dc5c26e1d663f0b9261",
-    "engine.py": "00908ecb79ace3a151e583d766d066461aaa3803120957d471d5738731218a4f",
+    "engine.py": "2ad515104c03f1504eada949b7017dee2f426e111b5964372af0835a88f75e73",
     "feature_diagnostics.py": "0171e9ca73b1e6173f203274690065d8e3efa103455a291d4c4ad8688cd3b8b0",
     "feature_hub.py": "bee2853b99dbdffa8b68b4caa63c9cfb4fbf0f4693cc9cebae0cd67769bc9685",
     "feature_plans.py": "85e9dc4b42778b7b262c4afe2ce323dd5d7ba4f265f39fe898ca70cd8573ad64",
     "feature_reports.py": "e3aeaa79a6fe38ec920d1075bdd2f1c00684990f1c82ae4c031f5b9d50988784",
-    "index.html": "6ede87b51cce6e9a0c874ce328f68c95038811150340f9b59f8a4330af950ba2",
-    "README.md": "1fe8abd2cbea1618897e13d9e3b791797d72db79dd2484d23494805d307c44a6",
+    "index.html": "1d34218faa692a5571cacee3cedf47329770f6ee603ed9bd8dc0d1a2d66fbf6f",
+    "README.md": "d7c930580448bc1ac0c1acaad5489c55ee3f22c42911ca235b5bd7a690a931bb",
     "SOURCES.md": "0cf14777c3704c3b68c97ee35202d87e5ebdf5e8626e2246fde6811b76bfa41d",
-    "style.css": "f009fe6cf50e49d69ccddec8a9fd4daed920e3e2477ead977580bde4b42590dc",
+    "style.css": "9cd0fdc4fd25afa52e1804966d8c9fd13f7ab8e549c57071eda8a824fba9c3c0",
     "tests/test_adapters.py": "dae68de107e9bd5c01b938f28dcd2c66e07b7329a4ddf531305d53dad8784c8c",
     "tests/test_ai_assist.py": "0c74af382ca760f03b6559f1767babe0309ab843e921da3864bf7bb67d4192a3",
     "tests/test_ai_dashboard.py": "f31c43ff50864d6fbae740d03144095b4efcad41f85d22650621b4bf4b9d446e",
@@ -42,6 +42,6 @@
     "tests/test_python_compatibility.py": "7f7b6518ad818a313380a534fa2d09d72b7c5aa96b2aab814ab819e59aee6c5b",
     "tests/test_regressions.py": "56455074d21ebab873ff94fffadae8d756272c97a19ca74110b09e05e19541a8",
     "tests/test_windows_packages.py": "1529c7022d252a8ca257c94c0505f3338302de6a86231e8e6ced37c5d132709d",
-    "VERIFICATION.md": "323dc54c68f836b7ae8a758e86cc79dfa2fcb04b11fbe8de6dbf8ba085ef32d7"
+    "VERIFICATION.md": "f18d03262dcb5c3d5bf624930012e082185c1839d58427bc17a72c73e982c01c"
   }
 }

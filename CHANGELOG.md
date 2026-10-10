@@ -2,6 +2,14 @@
 
 Preview releases can encounter publisher/channel changes. Version observations describe the checked run, not permanent pins for future toolkit installs.
 
+## 3.0.0-preview.4 — 11 October 2026
+
+- Unified the repository and dashboard around midnight blue, electric cyan and violet, preserving the tactile switches and physical console controls.
+- Redesigned the GitHub README with original matching graphics, clearer navigation and an immediate setup command; refreshed screenshots show the working interface in simulation mode.
+- Matched the language atlas frame to the same palette while preserving all catalog metadata and official language colors.
+
+The existing verified updater, tool compatibility rules and 100 Feature Studio actions are unchanged.
+
 ## 3.0.0-preview.3 — 10 October 2026
 
 - Restyled the working dashboard as a tactile instrument console: brushed metal panels, beveled controls, recessed readouts, physical switches and subtle illuminated accents, with original offline CSS.
