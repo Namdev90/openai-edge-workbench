@@ -77,7 +77,7 @@ try {
         $env:UV_NO_CONFIG = '1'
         $env:UV_PYTHON_INSTALL_DIR = Join-Path $Root 'runtimes\uv-python'
         Status 'Discovering the newest normal CPython build in the uv catalog, including alpha/beta releases.'
-        $raw = & $uv python list --all-versions --output-format json
+        $raw = & $uv python list --all-versions --only-downloads --output-format json
         if ($LASTEXITCODE -ne 0) { throw 'uv could not list Python builds.' }
         $catalog = ($raw -join "`n") | ConvertFrom-Json
         $cpu = if ($nativeArch -eq 'ARM64') { 'aarch64' } else { 'x86_64' }
@@ -92,7 +92,7 @@ try {
         $best = $choices | Sort-Object Major,Minor,Patch,Stage,Number -Descending | Select-Object -First 1
         if (-not $best) { throw 'No compatible CPython catalog entry found. No unofficial runtime was substituted.' }
         Status ('Installing bootstrap Python ' + $best.Version + '. Existing Python installations are retained.')
-        & $uv python install $best.Key
+        & $uv python install --no-bin --no-registry $best.Key
         if ($LASTEXITCODE -ne 0) { throw 'The selected Python build failed to install; no silent stable fallback was attempted.' }
         $found = & $uv python find --managed-python $best.Key
         if ($LASTEXITCODE -ne 0) { throw 'Installed Python could not be located.' }
