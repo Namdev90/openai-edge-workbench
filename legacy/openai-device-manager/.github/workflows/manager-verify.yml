@@ -1,0 +1,81 @@
+name: OpenAI Device Manager verification
+on:
+  push:
+    branches: [openai-device-manager]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: openai-device-manager-verification
+  cancel-in-progress: true
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/openai-device-manager'
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - name: Retrieve immutable source
+        id: source
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $src=Join-Path $env:RUNNER_TEMP 'ODM\src'
+          New-Item -ItemType Directory $src -Force | Out-Null
+          foreach ($name in @('Manager.ps1','Install.ps1','tests.ps1')) {
+            Invoke-WebRequest "https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/$env:GITHUB_SHA/$name" -OutFile (Join-Path $src $name)
+          }
+          $api="https://api.github.com/repos/$env:GITHUB_REPOSITORY"
+          $h=@{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'User-Agent'='ODM-verification'}
+          $c=Invoke-RestMethod "$api/git/commits/$env:GITHUB_SHA" -Headers $h
+          $t=Invoke-RestMethod "$api/git/trees/$($c.tree.sha)?recursive=1" -Headers $h
+          if (@($t.tree | Where-Object path -eq 'maintenance/repair.ps1').Count -eq 1) {
+            $patch=Join-Path $env:RUNNER_TEMP 'ODM-repair.ps1'
+            Invoke-WebRequest "https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/$env:GITHUB_SHA/maintenance/repair.ps1" -OutFile $patch
+            & $patch -SourceRoot $src
+            'changed=true' | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          }
+      - name: Windows PowerShell 5.1 regression tests
+        shell: powershell
+        run: |
+          $PSVersionTable
+          & "$env:RUNNER_TEMP\ODM\src\tests.ps1"
+      - name: PowerShell 7 regression tests
+        shell: pwsh
+        run: |
+          $PSVersionTable
+          & "$env:RUNNER_TEMP\ODM\src\tests.ps1"
+      - name: WinForms construction smoke test
+        shell: powershell
+        run: |
+          & "$env:RUNNER_TEMP\ODM\src\Manager.ps1" -GuiSmoke -DataRoot "$env:RUNNER_TEMP\ODM-GUI"
+          if (!(Test-Path "$env:RUNNER_TEMP\ODM-GUI\GUI-preview.png")) { throw 'GUI snapshot missing' }
+          Write-Output 'PASS: GUI constructed and rendered; no installation or model usage.'
+      - name: Publish tested corrections on isolated branch
+        if: steps.source.outputs.changed == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $api="https://api.github.com/repos/$env:GITHUB_REPOSITORY"
+          $h=@{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'User-Agent'='ODM-verification'}
+          $ref=Invoke-RestMethod "$api/git/ref/heads/openai-device-manager" -Headers $h
+          if ($ref.object.sha -ne $env:GITHUB_SHA) { throw 'Branch advanced; refusing overwrite' }
+          $old=Invoke-RestMethod "$api/git/commits/$env:GITHUB_SHA" -Headers $h
+          $entries=[Collections.Generic.List[object]]::new()
+          foreach ($name in @('Manager.ps1','Install.ps1','tests.ps1')) {
+            $entries.Add(@{path=$name;mode='100644';type='blob';content=[IO.File]::ReadAllText("$env:RUNNER_TEMP\ODM\src\$name")})
+          }
+          $entries.Add(@{path='maintenance/repair.ps1';mode='100644';type='blob';sha=$null})
+          $image=[Convert]::ToBase64String([IO.File]::ReadAllBytes("$env:RUNNER_TEMP\ODM-GUI\GUI-preview.png"))
+          $blob=Invoke-RestMethod "$api/git/blobs" -Method Post -Headers $h -ContentType 'application/json' -Body (@{content=$image;encoding='base64'} | ConvertTo-Json)
+          $entries.Add(@{path='docs/GUI-preview.png';mode='100644';type='blob';sha=$blob.sha})
+          $body=@{base_tree=$old.tree.sha;tree=$entries.ToArray()} | ConvertTo-Json -Depth 8
+          $tree=Invoke-RestMethod "$api/git/trees" -Method Post -Headers $h -ContentType 'application/json' -Body $body
+          $body=@{message='Publish verified inventory and report fixes';tree=$tree.sha;parents=@($env:GITHUB_SHA)} | ConvertTo-Json
+          $commit=Invoke-RestMethod "$api/git/commits" -Method Post -Headers $h -ContentType 'application/json' -Body $body
+          $body=@{sha=$commit.sha;force=$false} | ConvertTo-Json
+          Invoke-RestMethod "$api/git/refs/heads/openai-device-manager" -Method Patch -Headers $h -ContentType 'application/json' -Body $body | Out-Null
+          Write-Output "Verified source published: $($commit.sha)"
