@@ -16,6 +16,8 @@ try{
  Throws {Get-SetupDownload '../file.ps1' ('a'*40) (Join-Path $tmp 'download')} 'unsafe download path rejected'
  Write-SetupFile (Join-Path $tmp 'atomic') 'first';Write-SetupFile (Join-Path $tmp 'atomic') 'second'
  Assert ((Get-Content (Join-Path $tmp 'atomic') -Raw) -eq 'second') 'atomic replacement supported'
+ $fake=Join-Path $tmp 'no-auth.cmd';[IO.File]::WriteAllText($fake,"@echo off`r`necho Not signed in 1>&2`r`nexit /b 1`r`n")
+ Assert (!(Test-GhAuthenticated $fake)) 'missing GitHub sign-in permits public fallback without terminating Windows PowerShell'
  function Get-SetupJson([string]$Endpoint){return [pscustomobject]@{type='file';encoding='base64';size=3;content='YWJj'}}
  Get-SetupDownload 'file.ps1' ('a'*40) (Join-Path $tmp 'download')
  Assert ((Get-Content (Join-Path $tmp 'download') -Raw) -eq 'abc') 'private GitHub contents decoding preserves bytes'

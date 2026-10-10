@@ -3,7 +3,14 @@
 param([switch]$Library,[switch]$VerifyOnly,[switch]$NoLaunch,[switch]$NoShortcut,[switch]$Offline,
  [string]$Commit,[string]$Root=(Join-Path $env:LOCALAPPDATA 'OpenAI-Edge-Workbench'))
 $ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue'
+Import-Module (Join-Path $PSHOME 'Modules/Microsoft.PowerShell.Utility/Microsoft.PowerShell.Utility.psd1') -ErrorAction Stop
+Import-Module (Join-Path $PSHOME 'Modules/Microsoft.PowerShell.Security/Microsoft.PowerShell.Security.psd1') -ErrorAction Stop
 $script:Repository='Namdev90/openai-edge-workbench';$script:UseGh=$false
+function Test-GhAuthenticated([string]$Command){
+ $prior=$ErrorActionPreference
+ try{$ErrorActionPreference='Continue';& $Command auth status --hostname github.com *> $null;return ($LASTEXITCODE -eq 0)}
+ finally{$ErrorActionPreference=$prior}
+}
 function Write-SetupFile([string]$Path,[string]$Text){
  $tmp=$Path+'.'+[guid]::NewGuid().ToString('N')+'.tmp'
  [IO.File]::WriteAllText($tmp,$Text,[Text.UTF8Encoding]::new($false))
@@ -75,7 +82,7 @@ try{
  Set-Acl -LiteralPath $Root -AclObject $acl
  $lock=[IO.File]::Open((Join-Path $Root 'setup.lock'),'OpenOrCreate','ReadWrite','None')
  $ghCommand=Get-Command gh.exe -ErrorAction SilentlyContinue
- if($ghCommand){$script:Gh=$ghCommand.Source;& $script:Gh auth status --hostname github.com *> $null;$script:UseGh=($LASTEXITCODE -eq 0)}
+ if($ghCommand){$script:Gh=$ghCommand.Source;$script:UseGh=Test-GhAuthenticated $script:Gh}
  $pointer=Join-Path $Root 'setup-current.json';Assert-SetupPath $pointer
  $current=$null;if(Test-Path -LiteralPath $pointer){$current=Get-Content $pointer -Raw|ConvertFrom-Json}
  $status=[ordered]@{repository=$script:Repository;utc=[DateTime]::UtcNow.ToString('o');state='NOT_CHECKED';commit='';authentication=$(if($script:UseGh){'GitHub CLI stored authentication'}else{'public API'})}
