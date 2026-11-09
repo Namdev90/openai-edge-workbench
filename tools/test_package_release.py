@@ -1,4 +1,5 @@
 """Offline regressions for release staging and preservation of local files."""
+import base64
 import hashlib
 from pathlib import Path
 import subprocess
@@ -23,8 +24,21 @@ class ReleasePackageTests(unittest.TestCase):
             self.assertEqual({p.name for p in second.iterdir()}, expected)
             for name in expected:
                 self.assertEqual((first / name).read_bytes(), (second / name).read_bytes())
+            for name in (
+                'OpenAI-Edge-Workbench-Setup.cmd', 'OpenAI-Edge-Workbench.cmd',
+                'Setup.ps1', 'Run.ps1', 'SETUP.md',
+            ):
+                with self.subTest(copied_asset=name):
+                    self.assertEqual((first / name).read_bytes(), (package.ROOT / name).read_bytes())
+            launcher = (package.ROOT / 'OpenAI-Edge-Workbench.cmd').read_bytes()
+            payload = base64.b64decode(
+                b''.join(launcher.split(b'\r\n::EDGE_PAYLOAD\r\n', 1)[1].split()), validate=True)
+            self.assertEqual((first / 'OpenAI-Edge-Workbench-Source.zip').read_bytes(), payload)
             sums = (first / package.CHECKSUM_NAME).read_text().splitlines()
-            self.assertEqual(len(sums), 6)
+            self.assertEqual([line.split('  ')[1] for line in sums], [
+                'OpenAI-Edge-Workbench-Setup.cmd', 'OpenAI-Edge-Workbench.cmd',
+                'OpenAI-Edge-Workbench-Source.zip', 'Setup.ps1', 'Run.ps1', 'SETUP.md',
+            ])
             for line in sums:
                 digest, name = line.split('  ')
                 self.assertEqual(hashlib.sha256((first / name).read_bytes()).hexdigest(), digest)
