@@ -11,12 +11,23 @@ Pop-Location
 python tools/build_release.py
 python tools/verify_payload.py
 python tools/verify_migration.py
+python tools/feature_catalog.py --check
+python tools/verify_docs.py
+python tools/verify_language_lab.py
+python -m unittest discover -s tools -p test_language_lab.py -v
+python tools/build_language_atlas.py --check
 node --check source/app.js
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/Test-Setup.ps1
 pwsh.exe -NoProfile -File tools/Test-Setup.ps1
 ```
 
 Check each exit status before proceeding. Rebuild whenever embedded source or tests change. Active text uses LF; executable CMD launchers retain CRLF. Do not normalize historical archives.
+
+## Documentation-only changes
+
+Use the [documentation guide](README.md) to put information beside the existing source of truth. Check relative links, command spelling, evidence scope and historical references. Run `python tools/verify_docs.py`; if catalog or atlas documentation changes, also run their checks above. A Markdown-only edit does not require rebuilding the embedded application, changing its version or publishing a release. Do not rewrite dated verification records as if their checks were repeated.
+
+The [CI workflow](../.github/workflows/verify.yml) is the executable reference for Windows/Linux coverage. Windows PowerShell and launcher smoke checks require Windows; a Linux pass does not replace them.
 
 ## Try without installing
 
