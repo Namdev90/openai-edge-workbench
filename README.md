@@ -135,6 +135,8 @@ These are **original metadata fixtures, not working implementations in 836 langu
 
 Use the [issue templates](https://github.com/Namdev90/openai-edge-workbench/issues/new/choose) for a redacted bug report or concrete feature request. Read [CONTRIBUTING.md](CONTRIBUTING.md) before adding an adapter, and report security issues [privately](https://github.com/Namdev90/openai-edge-workbench/security/advisories/new).
 
+[Documentation guide](docs/README.md) · [Operations and troubleshooting](docs/OPERATIONS.md) · [Project history](docs/HISTORY.md)
+
 [Changelog](CHANGELOG.md) · [Visual identity](docs/BRAND.md) · [Researched alternatives](ALTERNATIVES.md)
 
 No project license has been selected. Third-party tools retain their publisher terms; this repository does not grant rights to redistribute them.
