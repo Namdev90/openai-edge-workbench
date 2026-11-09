@@ -15,6 +15,7 @@ python tools/feature_catalog.py --check
 python tools/verify_docs.py
 python tools/verify_language_lab.py
 python -m unittest discover -s tools -p test_language_lab.py -v
+python -m unittest discover -s tools -p test_package_release.py -v
 python tools/build_language_atlas.py --check
 node --check source/app.js
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/Test-Setup.ps1
@@ -53,3 +54,15 @@ Recipes never start installation. Keep Apply separate from Start, and pause auto
 6. Test the real GitHub bootstrap with `EDGE_NO_LAUNCH=1` and an isolated `EDGE_ROOT`. Inspect installed source/provenance; this does not run toolkit installers or model requests.
 
 The proposal snapshot uses `roadmap:Fnnn`; the implemented catalog uses `studio:fnnn`. Update [status reconciliation](ROADMAP-STATUS.md) when acceptance criteria are met.
+
+### Stage release files without overwriting local data
+
+After the checks above pass, choose a **new** directory whose parent already exists:
+
+```powershell
+python tools/package_release.py --output "$env:TEMP\Namu-Workbench-Release-Candidate"
+```
+
+The packager verifies the embedded payload, snapshots the six release assets and writes their checksum file. It refuses an existing output path, including an empty directory, and rejects symlink/junction destinations or parents. A repeated run needs a different output path; no overwrite option is provided. A failed disk write can leave a partial new directory for inspection, which must not be published as a completed release.
+
+Compare the six entries in `SHA256SUMS.txt` with the staged files. Staging is local preparation, not a GitHub release or proof of a real Windows installation. The packaging regression suite verifies deterministic bytes, checksums, failed-verification behavior and preservation of existing/concurrently created destinations on Windows and Linux CI.
