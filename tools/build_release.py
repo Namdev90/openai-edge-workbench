@@ -3,11 +3,23 @@ from pathlib import Path
 import base64, hashlib, io, json, re, textwrap, zipfile
 root=Path(__file__).resolve().parents[1]
 version=re.search(r"(?m)^VERSION = '([^']+)'$",(root/'source/engine.py').read_text())[1]
-files=sorted(p for p in (root/'source').rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.suffix in {'.py','.ps1','.js','.html','.css','.md'})
+# Sort relative path components explicitly rather than Path objects: Windows
+# compares paths case-insensitively while POSIX compares their original case.
+# Preserve the established Windows-built archive order; original-case parts
+# break ties deterministically if a POSIX checkout contains case aliases.
+def source_order(path):
+    parts=path.relative_to(root/'source').parts
+    return tuple(part.casefold() for part in parts),parts
+
+files=sorted((p for p in (root/'source').rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.suffix in {'.py','.ps1','.js','.html','.css','.md'}),key=source_order)
 payload=io.BytesIO()
 with zipfile.ZipFile(payload,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
     for p in files:
         info=zipfile.ZipInfo(p.relative_to(root/'source').as_posix(),date_time=(2026,10,10,0,0,0))
+        # ZipInfo otherwise records the host OS (0 on Windows, 3 on POSIX).
+        # Keep the metadata of existing Windows-built releases on every host.
+        info.create_system=0
+        info.external_attr=0o600 << 16
         info.compress_type=zipfile.ZIP_DEFLATED
         z.writestr(info,p.read_bytes())
 data=payload.getvalue();digest=hashlib.sha256(data).hexdigest()
