@@ -25,7 +25,7 @@ Check each exit status before proceeding. Rebuild whenever embedded source or te
 
 ## Documentation-only changes
 
-Use the [documentation guide](README.md) to put information beside the existing source of truth. Check relative links, command spelling, evidence scope and historical references. Run `python tools/verify_docs.py`; if catalog or atlas documentation changes, also run their checks above. A Markdown-only edit does not require rebuilding the embedded application, changing its version or publishing a release. Do not rewrite dated verification records as if their checks were repeated.
+Use the [documentation guide](README.md) to put information beside the existing source of truth. Check relative links, command spelling, evidence scope and historical references. Run `python tools/verify_docs.py`; if catalog or atlas documentation changes, also run their checks above. An edit limited to the root README or Markdown under `docs/` does not require rebuilding the embedded application, changing its version or publishing a release. Markdown under `source/`, including `source/README.md` and `source/VERIFICATION.md`, is embedded by `tools/build_release.py`: rebuild the launchers/manifest and run payload verification whenever any embedded file changes. Do not rewrite dated verification records as if their checks were repeated.
 
 The [CI workflow](../.github/workflows/verify.yml) is the executable reference for Windows/Linux coverage. Windows PowerShell and launcher smoke checks require Windows; a Linux pass does not replace them.
 
