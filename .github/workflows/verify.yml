@@ -31,6 +31,8 @@ jobs:
         run: python tools/verify_language_lab.py
       - name: Language catalog safety regressions
         run: python -m unittest discover -s tools -p test_language_lab.py -v
+      - name: Release packaging preservation regressions
+        run: python -m unittest discover -s tools -p test_package_release.py -v
       - name: Verify generated language atlas
         run: python tools/build_language_atlas.py --check
       - name: Windows setup and parser tests
