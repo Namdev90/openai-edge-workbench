@@ -15,6 +15,7 @@ python tools/feature_catalog.py --check
 python tools/verify_docs.py
 python tools/verify_language_lab.py
 python -m unittest discover -s tools -p test_language_lab.py -v
+python -m unittest discover -s tools -p test_build_release.py -v
 python -m unittest discover -s tools -p test_package_release.py -v
 python tools/build_language_atlas.py --check
 node --check source/app.js
@@ -66,3 +67,9 @@ python tools/package_release.py --output "$env:TEMP\Namu-Workbench-Release-Candi
 The packager verifies the embedded payload, snapshots the six release assets and writes their checksum file. It refuses an existing output path, including an empty directory, and rejects symlink/junction destinations or parents. A repeated run needs a different output path; no overwrite option is provided. A failed disk write can leave a partial new directory for inspection, which must not be published as a completed release.
 
 Compare the six entries in `SHA256SUMS.txt` with the staged files. Staging is local preparation, not a GitHub release or proof of a real Windows installation. The packaging regression suite verifies deterministic bytes, checksums, failed-verification behavior and preservation of existing/concurrently created destinations on Windows and Linux CI.
+
+### Reproduce the current release build
+
+The builder orders relative source path components case-insensitively, with original-case components as a tie-breaker, and fixes ZIP creator metadata to the established Windows release format. These choices avoid host-dependent `Path` ordering and ZIP platform fields. Existing release bytes and historical archives are unchanged by this normalization.
+
+`test_build_release.py` rebuilds twice in an isolated temporary checkout and compares all generated artifacts with the checked-in release on both Windows and Linux CI. It also checks mixed-case fixture ordering and ZIP timestamps, attributes and creator metadata. This detects differences for the tested Python/compression runtimes; it does not promise byte identity across arbitrary future Python or zlib versions. Embedded source changes require intentionally rebuilding and committing the current generated artifacts before this comparison can pass.
